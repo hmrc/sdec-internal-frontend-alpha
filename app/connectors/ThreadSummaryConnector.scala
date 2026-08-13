@@ -14,30 +14,25 @@
  * limitations under the License.
  */
 
-package navigation
+package connectors
 
-import controllers.routes
-import models.*
-import pages.*
-import play.api.mvc.Call
+import config.FrontendAppConfig
+import models.Thread
+import uk.gov.hmrc.http.HttpReads.Implicits.readFromJson
+import uk.gov.hmrc.http.client.HttpClientV2
+import uk.gov.hmrc.http.{HeaderCarrier, StringContextOps}
 
 import javax.inject.{Inject, Singleton}
+import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class Navigator @Inject() () {
+class ThreadSummaryConnector @Inject() (
+    httpClient: HttpClientV2,
+    appConfig: FrontendAppConfig
+)(using ec: ExecutionContext) {
 
-  private val normalRoutes: Page => UserAnswers => Call = { case _ =>
-    _ => routes.DashboardController.onPageLoad()
-  }
-
-  private val checkRouteMap: Page => UserAnswers => Call = { case _ =>
-    _ => routes.CheckYourAnswersController.onPageLoad()
-  }
-
-  def nextPage(page: Page, mode: Mode, userAnswers: UserAnswers): Call = mode match {
-    case NormalMode =>
-      normalRoutes(page)(userAnswers)
-    case CheckMode =>
-      checkRouteMap(page)(userAnswers)
-  }
+  def getAll()(using hc: HeaderCarrier): Future[Seq[Thread]] =
+    httpClient
+      .get(url"${appConfig.threadSummariesUrl}")
+      .execute[Seq[Thread]]
 }

@@ -14,23 +14,20 @@
  * limitations under the License.
  *@
 
-@this(
-    layout: templates.Layout,
-    govukButton: GovukButton
+@this()
+
+@(
+    text: String,
+    href: String,
+    isActive: Boolean = false
 )
 
-@()(implicit request: Request[_], messages: Messages)
-
-@layout(pageTitle = titleNoForm(messages("journeyRecovery.startAgain.title"))) {
-
-    <h1 class="govuk-heading-xl">@messages("journeyRecovery.startAgain.heading")</h1>
-
-    <p class="govuk-body">@messages("journeyRecovery.startAgain.guidance")</p>
-
-    <p class="govuk-body">
-        @govukButton(
-            ButtonViewModel(messages("site.startAgain"))
-                .asLink(routes.DashboardController.onPageLoad().url)
-        )
-    </p>
-}
+<a
+class="sdec-navigation__link govuk-link govuk-link--no-visited-state govuk-body-m govuk-!-margin-bottom-0"
+href="@href"
+    @if(isActive) {
+        aria-current="page"
+    }
+>
+@text
+</a>

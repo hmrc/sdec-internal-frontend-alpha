@@ -36,7 +36,7 @@ class NavigatorSpec extends SpecBase {
           UnknownPage,
           NormalMode,
           UserAnswers("id")
-        ) mustBe routes.IndexController.onPageLoad()
+        ) mustBe routes.DashboardController.onPageLoad()
       }
     }
 

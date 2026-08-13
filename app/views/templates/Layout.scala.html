@@ -16,22 +16,45 @@
 
 @import config.FrontendAppConfig
 @import uk.gov.hmrc.hmrcfrontend.views.config.StandardAlphaBanner
-@import uk.gov.hmrc.hmrcfrontend.views.html.helpers._
 @import uk.gov.hmrc.hmrcfrontend.views.html.components._
 @import uk.gov.hmrc.govukfrontend.views.html.components._
-@import uk.gov.hmrc.hmrcfrontend.views.viewmodels.hmrcstandardpage._
+@import uk.gov.hmrc.govukfrontend.views.viewmodels.backlink.BackLink
+@import views.html.components.navigation.NavigationLink
+@import uk.gov.hmrc.hmrcfrontend.views.viewmodels.internalheader.InternalHeader
+@import views.html.helper.CSPNonce
 
 @this(
     appConfig: FrontendAppConfig,
     hmrcTimeoutDialog: HmrcTimeoutDialog,
     hmrcReportTechnicalIssueHelper: HmrcReportTechnicalIssueHelper,
     alphaBanner: StandardAlphaBanner,
-    hmrcStandardPage: HmrcStandardPage
+    hmrcInternalHeader: HmrcInternalHeader,
+    govukLayout: GovukLayout,
+    hmrcInternalHead: HmrcInternalHead,
+    govukPhaseBanner: GovukPhaseBanner,
+    autocompleteJavascript : HmrcAccessibleAutocompleteJavascript,
+    hmrcScripts: HmrcScripts,
+    navigationLink: NavigationLink,
+    govukBackLink: GovukBackLink,
 )
 
-@(pageTitle: String, showBackLink: Boolean = true, timeout: Boolean = true, showSignOut: Boolean = true, showHmrcBanner: Boolean = false)(contentBlock: Html)(implicit rh: RequestHeader, messages: Messages)
+@(
+    pageTitle: String,
+    userName: Option[String] = None,
+    showBackLink: Boolean = true,
+    timeout: Boolean = true,
+    showSignOut: Boolean = true,
+    showHmrcBanner: Boolean = false
+)(contentBlock: Html)(implicit rh: RequestHeader, messages: Messages)
 
 @head = {
+
+    @hmrcInternalHead()
+    @hmrcScripts()
+    @autocompleteJavascript()
+    <script @{CSPNonce.attr} src='@controllers.routes.Assets.versioned("javascripts/jquery-3.6.0.min.js")'></script>
+    <script @{CSPNonce.attr} src='@controllers.routes.Assets.versioned("javascripts/application.min.js")'></script>
+    <link rel="stylesheet" href="@routes.Assets.versioned("stylesheets/application.css")" type="text/css">
 
     @if(timeout) {
         @hmrcTimeoutDialog(TimeoutDialog(
@@ -48,24 +71,51 @@
     }
 }
 
+@header = {
+    @hmrcInternalHeader(InternalHeader(
+        homepageUrl = routes.DashboardController.onPageLoad().url,
+        serviceName = Some(messages("sdec.dashboard.service.name")),
+        serviceUrl = routes.DashboardController.onPageLoad().url
+    ))
+}
+
+@navigation = {
+    @userName.map { name =>
+        <nav class="sdec-navigation" aria-label="Service navigation">
+            <div class="govuk-width-container sdec-navigation__container">
+                <span class="sdec-navigation__welcome govuk-body-m govuk-!-margin-bottom-0">
+                    @messages("sdec.navigation.welcome", name)
+                </span>
+
+                @navigationLink(
+                    text = messages("sdec.navigation.workspace"),
+                    href = routes.DashboardController.onPageLoad().url,
+                    isActive = true,
+                )
+
+            </div>
+        </nav>
+    }
+}
+
+@beforeContent = {
+    @navigation
+    @govukPhaseBanner(alphaBanner(appConfig.feedbackUrl))
+
+    @if(showBackLink) {
+        @govukBackLink(BackLink.mimicsBrowserBackButtonViaJavaScript)
+    }
+}
+
 @content = {
     @contentBlock
     @hmrcReportTechnicalIssueHelper()
 }
 
-@hmrcStandardPage(HmrcStandardPageParams(
+@govukLayout(
     pageTitle = Some(pageTitle),
-    templateOverrides = TemplateOverrides(
-        additionalHeadBlock = Some(head)
-    ),
-    serviceURLs = ServiceURLs(
-        serviceUrl = Some(routes.IndexController.onPageLoad().url),
-        signOutUrl = if(showSignOut) Some(controllers.auth.routes.AuthController.signOut().url) else None
-    ),
-    banners = Banners(
-        displayHmrcBanner = showHmrcBanner,
-        phaseBanner = Some(alphaBanner(appConfig.feedbackUrl))
-    ),
-    isWelshTranslationAvailable = appConfig.languageTranslationEnabled,
-    backLink = if (showBackLink) Some(BackLink.mimicsBrowserBackButtonViaJavaScript) else None
-))(content)
+    headBlock = Some(head),
+    headerBlock = Some(header),
+    beforeContentBlock = Some(beforeContent),
+    mainContentLayout = Some((content: Html) => content)
+)(content)

@@ -16,28 +16,23 @@
 
 package controllers
 
-import base.SpecBase
-import play.api.test.FakeRequest
-import play.api.test.Helpers.*
-import views.html.IndexView
+import controllers.actions.IdentifierAction
+import play.api.i18n.I18nSupport
+import play.api.mvc.*
+import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
+import views.html.DevelopmentInProgressView
 
-class IndexControllerSpec extends SpecBase {
+import javax.inject.{Inject, Singleton}
 
-  "Index Controller" - {
+@Singleton
+class DevelopmentInProgressController @Inject() (
+    val controllerComponents: MessagesControllerComponents,
+    identify: IdentifierAction,
+    view: DevelopmentInProgressView
+) extends FrontendBaseController
+    with I18nSupport:
 
-    "must return OK and the correct view for a GET" in {
-
-      val application = applicationBuilder(userAnswers = None).build()
-
-      running(application) {
-        val request = FakeRequest(GET, routes.IndexController.onPageLoad().url)
-
-        val result = route(application, request).value
-
-        application.injector.instanceOf[IndexView]
-
-        status(result) mustEqual OK
-      }
+    def onPageLoad(): Action[AnyContent] = identify { request =>
+      given Request[AnyContent] = request
+      Ok(view())
     }
-  }
-}

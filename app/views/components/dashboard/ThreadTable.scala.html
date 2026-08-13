@@ -1,0 +1,88 @@
+@*
+ * Copyright 2026 HM Revenue & Customs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *@
+
+@import play.twirl.api.HtmlFormat
+@import uk.gov.hmrc.govukfrontend.views.html.components.*
+@import viewmodels.{DashboardThread, ThreadPriority}
+@import views.html.components.gds.link
+@import views.html.components.gds.LabelledScrollWrapper
+
+@this(
+        govukTable: GovukTable,
+        govukTag: GovukTag,
+        threadLink: link,
+        labelledScrollWrapper: LabelledScrollWrapper
+)
+
+@(threads: Seq[DashboardThread])(implicit messages: Messages)
+
+@labelledScrollWrapper(messages("sdec.dashboard.table.heading")) {
+    @govukTable(Table(
+        classes = "sdec-workspace-table govuk-table--small-text-until-tablet",
+        head = Some(Seq(
+            HeadCell(content = Text(messages("sdec.dashboard.table.threadReference")), classes = "govuk-body-s"),
+            HeadCell(content = Text(messages("sdec.dashboard.table.relatedReference")), classes = "govuk-body-s"),
+            HeadCell(content = Text(messages("sdec.dashboard.table.externalContact")), classes = "govuk-body-s"),
+            HeadCell(content = Text(messages("sdec.dashboard.table.status")), classes = "govuk-body-s"),
+            HeadCell(content = Text(messages("sdec.dashboard.table.waitingOn")), classes = "govuk-body-s"),
+            HeadCell(content = Text(messages("sdec.dashboard.table.deadline")), classes = "govuk-body-s"),
+            HeadCell(content = Text(""), classes = "govuk-body-s")
+        )),
+        rows = threads.map { thread =>
+            val priorityTag = thread.priority match {
+                case ThreadPriority.Overdue =>
+                    govukTag(Tag(
+                        content = Text(messages("sdec.dashboard.table.tag.overdue")),
+                        classes = "govuk-tag--red"
+                    ))
+
+                case ThreadPriority.ResponseReceived =>
+                    govukTag(Tag(
+                        content = Text(messages("sdec.dashboard.table.tag.responseReceived")),
+                        classes = "govuk-tag--blue"
+                    ))
+
+                case ThreadPriority.None =>
+                    HtmlFormat.empty
+            }
+
+            Seq(
+                TableRow(content = HtmlContent(
+                    threadLink(
+                        text = thread.threadReference,
+                        call = Call("GET", controllers.routes.DevelopmentInProgressController.onPageLoad().url),
+                        classes = Some("govuk-link govuk-link--no-visited-state govuk-body-s")
+                    )
+                )),
+                TableRow(content = Text(thread.relatedReference), classes = "govuk-body-s"),
+                TableRow(content = HtmlContent(
+                    threadLink(
+                        text = thread.externalContact,
+                        call = Call("GET", controllers.routes.DevelopmentInProgressController.onPageLoad().url),
+                        classes = Some("govuk-link govuk-link--no-visited-state govuk-body-s")
+                    )
+                )),
+                TableRow(content = Text(thread.status), classes = "govuk-body-s"),
+                TableRow(content = Text(thread.waitingOn), classes = "govuk-body-s"),
+                TableRow(content = Text(thread.deadline), classes = "govuk-body-s"),
+                TableRow(
+                    content = HtmlContent(priorityTag),
+                    classes = "govuk-body-s sdec-priority-column"
+                )
+            )
+        }
+    ))
+}

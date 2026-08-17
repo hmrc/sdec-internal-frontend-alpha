@@ -32,14 +32,15 @@
 @labelledScrollWrapper(messages("sdec.dashboard.table.heading")) {
     @govukTable(Table(
         classes = "sdec-workspace-table govuk-table--small-text-until-tablet",
+        firstCellIsHeader = true,
         head = Some(Seq(
-            HeadCell(content = Text(messages("sdec.dashboard.table.threadReference")), classes = "govuk-body-s"),
-            HeadCell(content = Text(messages("sdec.dashboard.table.relatedReference")), classes = "govuk-body-s"),
-            HeadCell(content = Text(messages("sdec.dashboard.table.externalContact")), classes = "govuk-body-s"),
-            HeadCell(content = Text(messages("sdec.dashboard.table.status")), classes = "govuk-body-s"),
-            HeadCell(content = Text(messages("sdec.dashboard.table.waitingOn")), classes = "govuk-body-s"),
-            HeadCell(content = Text(messages("sdec.dashboard.table.deadline")), classes = "govuk-body-s"),
-            HeadCell(content = Text(""), classes = "govuk-body-s")
+            HeadCell(content = Text(messages("sdec.dashboard.table.threadReference"))),
+            HeadCell(content = Text(messages("sdec.dashboard.table.relatedReference"))),
+            HeadCell(content = Text(messages("sdec.dashboard.table.externalContact"))),
+            HeadCell(content = Text(messages("sdec.dashboard.table.status"))),
+            HeadCell(content = Text(messages("sdec.dashboard.table.waitingOn"))),
+            HeadCell(content = Text(messages("sdec.dashboard.table.deadline"))),
+            HeadCell(content = Text(""))
         )),
         rows = threads.map { thread =>
             val priorityTag = thread.priority match {
@@ -64,23 +65,23 @@
                     threadLink(
                         text = thread.threadReference,
                         call = Call("GET", controllers.routes.DevelopmentInProgressController.onPageLoad().url),
-                        classes = Some("govuk-link govuk-link--no-visited-state govuk-body-s")
+                        classes = Some("govuk-link govuk-link--no-visited-state")
                     )
                 )),
-                TableRow(content = Text(thread.relatedReference), classes = "govuk-body-s"),
+                TableRow(content = Text(thread.relatedReference)),
                 TableRow(content = HtmlContent(
                     threadLink(
                         text = thread.externalContact,
                         call = Call("GET", controllers.routes.DevelopmentInProgressController.onPageLoad().url),
-                        classes = Some("govuk-link govuk-link--no-visited-state govuk-body-s")
+                        classes = Some("govuk-link govuk-link--no-visited-state")
                     )
                 )),
-                TableRow(content = Text(thread.status), classes = "govuk-body-s"),
-                TableRow(content = Text(thread.waitingOn), classes = "govuk-body-s"),
-                TableRow(content = Text(thread.deadline), classes = "govuk-body-s"),
+                TableRow(content = Text(thread.status)),
+                TableRow(content = Text(thread.waitingOn)),
+                TableRow(content = Text(thread.deadline)),
                 TableRow(
                     content = HtmlContent(priorityTag),
-                    classes = "govuk-body-s sdec-priority-column"
+                    classes = "sdec-priority-column"
                 )
             )
         }

@@ -40,11 +40,15 @@
         @govukButton(Button(
             content = Text(messages("sdec.button.thread.create")),
             href = Some(controllers.routes.DevelopmentInProgressController.onPageLoad().url),
-            classes = "govuk-!-margin-bottom-0"
+            classes = "govuk-button--small govuk-!-margin-bottom-0"
         ))
         </div>
 
-        @headingH2(message = messages("sdec.dashboard.table.heading"), size = "l")
+        @headingH2(
+            message = messages("sdec.dashboard.table.heading"),
+            size = "m",
+            extraClasses = Seq("govuk-!-margin-bottom-3")
+        )
 
         @if(threads.nonEmpty) {
             @threadTable(threads)

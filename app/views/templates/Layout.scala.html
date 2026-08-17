@@ -19,7 +19,6 @@
 @import uk.gov.hmrc.hmrcfrontend.views.html.components._
 @import uk.gov.hmrc.govukfrontend.views.html.components._
 @import uk.gov.hmrc.govukfrontend.views.viewmodels.backlink.BackLink
-@import views.html.components.navigation.NavigationLink
 @import uk.gov.hmrc.hmrcfrontend.views.viewmodels.internalheader.InternalHeader
 @import views.html.helper.CSPNonce
 
@@ -33,8 +32,8 @@
     hmrcInternalHead: HmrcInternalHead,
     govukPhaseBanner: GovukPhaseBanner,
     autocompleteJavascript : HmrcAccessibleAutocompleteJavascript,
+    govukServiceNavigation: GovukServiceNavigation,
     hmrcScripts: HmrcScripts,
-    navigationLink: NavigationLink,
     govukBackLink: GovukBackLink,
 )
 
@@ -77,29 +76,24 @@
         serviceName = Some(messages("sdec.dashboard.service.name")),
         serviceUrl = routes.DashboardController.onPageLoad().url
     ))
-}
 
-@navigation = {
     @userName.map { name =>
-        <nav class="sdec-navigation" aria-label="Service navigation">
-            <div class="govuk-width-container sdec-navigation__container">
-                <span class="sdec-navigation__welcome govuk-body-m govuk-!-margin-bottom-0">
-                    @messages("sdec.navigation.welcome", name)
-                </span>
-
-                @navigationLink(
-                    text = messages("sdec.navigation.workspace"),
+        @govukServiceNavigation(ServiceNavigation(
+            navigation = Seq(
+                ServiceNavigationItem(
+                    content = Text(messages("sdec.navigation.welcome", name))
+                ),
+                ServiceNavigationItem(
+                    content = Text(messages("sdec.navigation.workspace")),
                     href = routes.DashboardController.onPageLoad().url,
-                    isActive = true,
+                    active = true
                 )
-
-            </div>
-        </nav>
+            )
+        ))
     }
 }
 
 @beforeContent = {
-    @navigation
     @govukPhaseBanner(alphaBanner(appConfig.feedbackUrl))
 
     @if(showBackLink) {

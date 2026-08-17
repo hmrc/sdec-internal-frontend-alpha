@@ -31,7 +31,7 @@ class DashboardControllerSpec extends SpecBase {
 
   private def baseApplication = applicationBuilder(userAnswers = None)
     .overrides(
-      bind[ThreadSummaryConnector].to(mockThreadSummaryConnector)
+      bind[ThreadSummaryConnector].toInstance(mockThreadSummaryConnector)
     )
 
   "Dashboard Controller" - {

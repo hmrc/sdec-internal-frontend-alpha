@@ -17,24 +17,35 @@
 package controllers
 
 import base.SpecBase
+import connectors.ThreadSummaryConnector
+import org.mockito.ArgumentMatchers.any
+import org.mockito.Mockito.when
+import play.api.inject.bind
 import play.api.test.FakeRequest
 import play.api.test.Helpers.*
-import views.html.DashboardView
+import uk.gov.hmrc.http.HeaderCarrier
+
+import scala.concurrent.Future
 
 class DashboardControllerSpec extends SpecBase {
+
+  private def baseApplication = applicationBuilder(userAnswers = None)
+    .overrides(
+      bind[ThreadSummaryConnector].to(mockThreadSummaryConnector)
+    )
 
   "Dashboard Controller" - {
 
     "must return OK and the correct view for a GET" in {
 
-      val application = applicationBuilder(userAnswers = None).build()
+      val application = baseApplication.build()
+
+      when(mockThreadSummaryConnector.getAll()(using any[HeaderCarrier]))
+        .thenReturn(Future.successful(Seq.empty))
 
       running(application) {
         val request = FakeRequest(GET, routes.DashboardController.onPageLoad().url)
-
-        val result = route(application, request).value
-
-        application.injector.instanceOf[DashboardView]
+        val result  = route(application, request).value
 
         status(result) mustEqual OK
       }

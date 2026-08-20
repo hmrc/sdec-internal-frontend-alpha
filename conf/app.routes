@@ -21,3 +21,6 @@ GET         /account/signed-out                          controllers.auth.Signed
 GET         /unauthorised                                controllers.UnauthorisedController.onPageLoad()
 
 GET         /development-in-progress                     controllers.DevelopmentInProgressController.onPageLoad()
+
+GET         /create-thread/recipient-details             controllers.RecipientDetailsController.onPageLoad()
+POST        /create-thread/recipient-details             controllers.RecipientDetailsController.onSubmit()

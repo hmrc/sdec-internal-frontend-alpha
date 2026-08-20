@@ -57,6 +57,7 @@ class AuthenticatedIdentifierAction @Inject() (
           .filter(_.nonEmpty)
           .getOrElse(internalId)
         block(IdentifierRequest(request, display))
+          .map(_.addingToSession("userName" -> display)(request))
       case None ~ _ =>
         throw new UnauthorizedException("Unable to retrieve internal Id")
     } recover {
@@ -84,6 +85,7 @@ class SessionIdentifierAction @Inject() (
     hc.sessionId match {
       case Some(session) =>
         block(IdentifierRequest(request, session.value))
+          .map(_.addingToSession("userName" -> session.value)(request))
       case None =>
         Future.successful(Redirect(routes.JourneyRecoveryController.onPageLoad()))
     }

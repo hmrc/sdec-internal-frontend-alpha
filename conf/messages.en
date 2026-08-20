@@ -67,5 +67,33 @@ sdec.dashboard.table.tag.responseReceived = Response received
 
 sdec.button.thread.create = Create new thread
 
+recipientDetails.title = Recipient details
+recipientDetails.caption = Create new thread
+recipientDetails.heading = Who are you contacting?
+recipientDetails.firstName = First name
+recipientDetails.lastName = Last name
+recipientDetails.email = Email address
+recipientDetails.phoneNumber = Mobile number
+recipientDetails.nationalInsuranceNumber = National Insurance number
+recipientDetails.hasRelatedCase = Does this relate to an existing case?
+recipientDetails.hasRelatedCase.hint = Select 'Yes' if this communication is linked to an existing case
+recipientDetails.caseReferenceNumber = Enter a reference number related to the case
+recipientDetails.caseReferenceNumber.hint = Add one reference number. This could be a National Insurance number, a customer ID number or the UTR reference
+
+recipientDetails.error.firstName.required = Enter a first name
+recipientDetails.error.firstName.length = First name must be 100 characters or less
+recipientDetails.error.lastName.required = Enter a last name
+recipientDetails.error.lastName.length = Last name must be 100 characters or less
+recipientDetails.error.email.required = Enter an email address
+recipientDetails.error.email.invalid = Enter an email address in the correct format
+recipientDetails.error.phoneNumber.required = Enter a mobile number
+recipientDetails.error.phoneNumber.invalid = Enter a mobile number in the correct format
+recipientDetails.error.nationalInsuranceNumber.required = Enter a National Insurance number
+recipientDetails.error.nationalInsuranceNumber.format = Enter a National Insurance number in the correct format, like QQ 12 34 56 C
+recipientDetails.error.nationalInsuranceNumber.invalid = Enter a real National Insurance number
+recipientDetails.error.hasRelatedCase.required = Select yes if this relates to an existing case
+recipientDetails.error.caseReferenceNumber.required = Enter a reference number related to the case
+recipientDetails.error.caseReferenceNumber.length = Reference number must be 30 characters or less
+
 
 

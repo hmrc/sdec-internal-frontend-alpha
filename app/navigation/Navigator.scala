@@ -26,8 +26,11 @@ import javax.inject.{Inject, Singleton}
 @Singleton
 class Navigator @Inject() () {
 
-  private val normalRoutes: Page => UserAnswers => Call = { case _ =>
-    _ => routes.DashboardController.onPageLoad()
+  private val normalRoutes: Page => UserAnswers => Call = {
+    case RecipientDetailsPage =>
+      _ => routes.DevelopmentInProgressController.onPageLoad()
+    case _ =>
+      _ => routes.DashboardController.onPageLoad()
   }
 
   private val checkRouteMap: Page => UserAnswers => Call = { case _ =>

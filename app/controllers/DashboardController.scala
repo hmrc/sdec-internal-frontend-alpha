@@ -51,7 +51,7 @@ class DashboardController @Inject() (
         .map { threads =>
           val dashboardThreads = dashboardService.buildThreads(threads)
           Ok(
-            view(request.userId, dashboardThreads)(using
+            view(dashboardThreads)(using
               request,
               request2Messages(request)
             )

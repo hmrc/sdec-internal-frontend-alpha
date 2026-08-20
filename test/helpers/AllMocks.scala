@@ -14,30 +14,21 @@
  * limitations under the License.
  */
 
-package controllers
+package helpers
 
-import base.SpecBase
-import play.api.test.FakeRequest
-import play.api.test.Helpers.*
-import views.html.IndexView
+import connectors.ThreadSummaryConnector
+import org.mockito.Mockito
+import org.scalatest.BeforeAndAfterEach
+import org.scalatestplus.mockito.MockitoSugar
 
-class IndexControllerSpec extends SpecBase {
+trait AllMocks extends MockitoSugar { me: BeforeAndAfterEach =>
 
-  "Index Controller" - {
+  val mockThreadSummaryConnector: ThreadSummaryConnector =
+    mock[ThreadSummaryConnector]
 
-    "must return OK and the correct view for a GET" in {
+  override protected def beforeEach(): Unit =
+    Seq(
+      mockThreadSummaryConnector
+    ).foreach(Mockito.reset(_))
 
-      val application = applicationBuilder(userAnswers = None).build()
-
-      running(application) {
-        val request = FakeRequest(GET, routes.IndexController.onPageLoad().url)
-
-        val result = route(application, request).value
-
-        application.injector.instanceOf[IndexView]
-
-        status(result) mustEqual OK
-      }
-    }
-  }
 }

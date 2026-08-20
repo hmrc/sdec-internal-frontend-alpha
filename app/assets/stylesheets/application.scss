@@ -1,1 +1,46 @@
 @import "lib/govuk-frontend/dist/govuk/base";
+
+.govuk-width-container {
+  max-width: 1200px;
+}
+
+.sdec-dashboard-header {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.sdec-workspace-table {
+  width: 100%;
+}
+
+.sdec-priority-column {
+  text-align: right;
+}
+
+.table-scroll-wrapper {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.govuk-service-navigation {
+  border-bottom-color: #8eb8dc;
+  background-color: #f4f8fb;
+
+  @include govuk-media-query($from: tablet) {
+    .govuk-service-navigation__item,
+    .govuk-service-navigation__service-name {
+      padding-top: 15px;
+      padding-bottom: 15px;
+      line-height: 1.5263157895;
+    }
+
+    .govuk-service-navigation__item--active {
+      padding-bottom: 10px;
+    }
+  }
+}
+
+.hmrc-internal-header__service-name {
+  margin-left: auto;
+  text-align: right;
+}

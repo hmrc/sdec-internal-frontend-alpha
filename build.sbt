@@ -39,10 +39,7 @@ lazy val microservice = (project in file("."))
       "viewmodels.govuk.all._"
     ),
     PlayKeys.playDefaultPort := 4500,
-    scalacOptions ++= Seq(
-      "-feature",
-      "-Wconf:cat=deprecation:ws,cat=feature:ws,cat=optimizer:ws,src=target/.*:s"
-    ),
+    scalacOptions += "-feature",
     libraryDependencies ++= AppDependencies(),
     retrieveManaged             := true,
     pipelineStages              := Seq(digest),

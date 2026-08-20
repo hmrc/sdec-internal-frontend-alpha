@@ -48,11 +48,24 @@ signedOut.guidance = We did not save your answers.
 unauthorised.title = You can’t access this service with this account
 unauthorised.heading = You can’t access this service with this account
 
-sdec.button.thread.create = Create Thread
 sdec.dashboard.title = SDEC Internal Dashboard
-sdec.dashboard.heading = SDEC Internal Dashboard
-sdec.notification = Notifications
-sdec.workspace = Workspace
-sdec.workspace.share.message = Share Files Securely
+sdec.dashboard.service.name = Share Files Securely with Child Benefit Service
+
+sdec.navigation.welcome = Welcome back: {0}
+sdec.navigation.workspace = Workspace
+sdec.navigation.notification = Notifications
+
+sdec.dashboard.table.heading = Shared work queue
+sdec.dashboard.table.threadReference = Thread reference
+sdec.dashboard.table.relatedReference = Related reference
+sdec.dashboard.table.externalContact = External contact
+sdec.dashboard.table.status = Status
+sdec.dashboard.table.waitingOn = Waiting on
+sdec.dashboard.table.deadline = Deadline
+sdec.dashboard.table.tag.overdue = Overdue
+sdec.dashboard.table.tag.responseReceived = Response received
+
+sdec.button.thread.create = Create new thread
+
 
 

@@ -22,5 +22,5 @@ GET         /unauthorised                                controllers.Unauthorise
 
 GET         /development-in-progress                     controllers.DevelopmentInProgressController.onPageLoad()
 
-GET         /create-thread/recipient-details             controllers.RecipientDetailsController.onPageLoad()
-POST        /create-thread/recipient-details             controllers.RecipientDetailsController.onSubmit()
+GET         /create-thread/recipient-details             controllers.createthread.RecipientDetailsController.onPageLoad()
+POST        /create-thread/recipient-details             controllers.createthread.RecipientDetailsController.onSubmit()

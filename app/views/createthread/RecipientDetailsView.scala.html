@@ -33,7 +33,7 @@
     <div class="govuk-grid-row">
         <div class="govuk-grid-column-one-half">
 
-        @formHelper(action = controllers.routes.RecipientDetailsController.onSubmit()) {
+        @formHelper(action = controllers.createthread.routes.RecipientDetailsController.onSubmit()) {
 
             @if(form.errors.nonEmpty) {
                 @govukErrorSummary(ErrorSummaryViewModel(form))

@@ -1,0 +1,101 @@
+@*
+ * Copyright 2026 HM Revenue & Customs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *@
+
+@import viewmodels._
+@import viewmodels.InputWidth._
+
+@this(
+        layout: templates.Layout,
+        formHelper: FormWithCSRF,
+        govukErrorSummary: GovukErrorSummary,
+        govukInput: GovukInput,
+        govukRadios: GovukRadios,
+        govukButton: GovukButton
+)
+
+@(form: Form[models.RecipientDetails])(implicit request: Request[_], messages: Messages)
+
+@layout(pageTitle = title(form, messages("recipientDetails.title"))) {
+
+    <div class="govuk-grid-row">
+        <div class="govuk-grid-column-one-half">
+
+        @formHelper(action = controllers.createthread.routes.RecipientDetailsController.onSubmit()) {
+
+            @if(form.errors.nonEmpty) {
+                @govukErrorSummary(ErrorSummaryViewModel(form))
+            }
+
+            <span class="govuk-caption-l">@messages("recipientDetails.caption")</span>
+
+            <h1 class="govuk-heading-l">@messages("recipientDetails.heading")</h1>
+
+            @govukInput(
+                InputViewModel(
+                    field = form("firstName"),
+                    label = LabelViewModel(messages("recipientDetails.firstName"))
+                )
+            )
+
+            @govukInput(
+                InputViewModel(
+                    field = form("lastName"),
+                    label = LabelViewModel(messages("recipientDetails.lastName"))
+                )
+            )
+
+            @govukInput(
+                InputViewModel(
+                    field = form("email"),
+                    label = LabelViewModel(messages("recipientDetails.email"))
+                )
+            )
+
+            @govukInput(
+                InputViewModel(
+                    field = form("phoneNumber"),
+                    label = LabelViewModel(messages("recipientDetails.phoneNumber"))
+                )
+            )
+
+            @govukInput(
+                InputViewModel(
+                    field = form("nationalInsuranceNumber"),
+                    label = LabelViewModel(messages("recipientDetails.nationalInsuranceNumber"))
+                ).withWidth(Fixed10)
+            )
+
+            @govukRadios(
+                RadiosViewModel.yesNoWithConditionalHtml(
+                    field = form("hasRelatedCase"),
+                    legend = LegendViewModel(messages("recipientDetails.hasRelatedCase")).asPageHeading(LegendSize.Medium),
+                    conditionalHtml = govukInput(
+                        InputViewModel(
+                            field = form("caseReferenceNumber"),
+                            label = LabelViewModel(messages("recipientDetails.caseReferenceNumber")).withCssClass("govuk-label--s")
+                        ).withHint(HintViewModel(messages("recipientDetails.caseReferenceNumber.hint")))
+                    )
+                ).withHint(HintViewModel(messages("recipientDetails.hasRelatedCase.hint")))
+            )
+
+            @govukButton(
+                ButtonViewModel(messages("site.continue"))
+            )
+        }
+
+        </div>
+    </div>
+}

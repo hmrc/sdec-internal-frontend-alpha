@@ -39,7 +39,6 @@
 
 @(
     pageTitle: String,
-    userName: Option[String] = None,
     showBackLink: Boolean = true,
     timeout: Boolean = true,
     showSignOut: Boolean = true,
@@ -77,7 +76,7 @@
         serviceUrl = routes.DashboardController.onPageLoad().url
     ))
 
-    @userName.map { name =>
+    @rh.session.get("userName").map { name =>
         @govukServiceNavigation(ServiceNavigation(
             navigation = Seq(
                 ServiceNavigationItem(
@@ -86,7 +85,7 @@
                 ServiceNavigationItem(
                     content = Text(messages("sdec.navigation.workspace")),
                     href = routes.DashboardController.onPageLoad().url,
-                    active = true
+                    active = rh.path == routes.DashboardController.onPageLoad().url
                 )
             )
         ))

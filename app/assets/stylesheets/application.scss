@@ -1,7 +1,9 @@
 @import "lib/govuk-frontend/dist/govuk/base";
 
-.govuk-width-container {
-  max-width: 1200px;
+body:has(.sdec-dashboard-page) {
+  .govuk-width-container {
+    max-width: 1200px;
+  }
 }
 
 .sdec-dashboard-header {

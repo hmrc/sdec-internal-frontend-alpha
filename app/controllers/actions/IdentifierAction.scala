@@ -22,6 +22,7 @@ import controllers.routes
 import models.requests.IdentifierRequest
 import play.api.mvc.*
 import play.api.mvc.Results.*
+import play.api.mvc.request.{Cell, RequestAttrKey}
 import uk.gov.hmrc.auth.core.*
 import uk.gov.hmrc.auth.core.retrieve.v2.Retrievals
 import uk.gov.hmrc.auth.core.retrieve.~
@@ -56,7 +57,13 @@ class AuthenticatedIdentifierAction @Inject() (
           .map(n => Seq(n.name, n.lastName).flatten.mkString(" "))
           .filter(_.nonEmpty)
           .getOrElse(internalId)
-        block(IdentifierRequest(request, display))
+
+        val updatedRequest = request.addAttr(
+          RequestAttrKey.Session,
+          Cell(request.session + ("userName" -> display))
+        )
+
+        block(IdentifierRequest(updatedRequest, display))
       case None ~ _ =>
         throw new UnauthorizedException("Unable to retrieve internal Id")
     } recover {
@@ -83,7 +90,12 @@ class SessionIdentifierAction @Inject() (
 
     hc.sessionId match {
       case Some(session) =>
-        block(IdentifierRequest(request, session.value))
+        val updatedRequest = request.addAttr(
+          RequestAttrKey.Session,
+          Cell(request.session + ("userName" -> session.value))
+        )
+
+        block(IdentifierRequest(updatedRequest, session.value))
       case None =>
         Future.successful(Redirect(routes.JourneyRecoveryController.onPageLoad()))
     }

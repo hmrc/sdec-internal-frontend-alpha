@@ -27,19 +27,18 @@
         emptyThreadState: EmptyThreadState
 )
 
-@(userName: String, threads: Seq[DashboardThread])(implicit request: Request[_], messages: Messages)
+@(threads: Seq[DashboardThread])(implicit request: Request[_], messages: Messages)
 
 @layout(
     pageTitle = titleNoForm(messages("sdec.dashboard.title")),
-    userName = Some(userName),
     showBackLink = false
 ) {
 
-    <div>
+    <div class="sdec-dashboard-page">
         <div class="sdec-dashboard-header">
         @govukButton(Button(
             content = Text(messages("sdec.button.thread.create")),
-            href = Some(controllers.routes.DevelopmentInProgressController.onPageLoad().url),
+            href = Some(controllers.createthread.routes.RecipientDetailsController.onPageLoad().url),
             classes = "govuk-button--small govuk-!-margin-bottom-0"
         ))
         </div>

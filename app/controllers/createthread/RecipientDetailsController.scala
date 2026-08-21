@@ -41,7 +41,6 @@ class RecipientDetailsController @Inject() (
     navigator: Navigator,
     identify: IdentifierAction,
     getData: DataRetrievalAction,
-    requireData: DataRequiredAction,
     formProvider: RecipientDetailsFormProvider,
     val controllerComponents: MessagesControllerComponents,
     view: RecipientDetailsView

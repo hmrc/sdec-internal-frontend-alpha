@@ -1,4 +1,4 @@
-@*
+/*
  * Copyright 2026 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,18 +12,16 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *@
+ */
 
-@import uk.gov.hmrc.govukfrontend.views.html.components.*
+package models
 
-@this(layout: templates.Layout, govukPanel: GovukPanel)
+import play.api.libs.json.{Json, OFormat}
 
-@()(implicit request: Request[_], messages: Messages)
+final case class ThreadDetails(
+    message: String
+)
 
-@layout(
-    pageTitle = titleNoForm(messages("developmentInProgress.title")),
-) {
-    @govukPanel(
-        Panel(title = Text("Development in progress"))
-    )
+object ThreadDetails {
+  implicit val format: OFormat[ThreadDetails] = Json.format[ThreadDetails]
 }

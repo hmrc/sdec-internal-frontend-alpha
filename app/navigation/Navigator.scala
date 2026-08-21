@@ -28,6 +28,8 @@ class Navigator @Inject() () {
 
   private val normalRoutes: Page => UserAnswers => Call = {
     case RecipientDetailsPage =>
+      _ => controllers.createthread.routes.ThreadDetailsController.onPageLoad()
+    case ThreadDetailsPage =>
       _ => routes.DevelopmentInProgressController.onPageLoad()
     case _ =>
       _ => routes.DashboardController.onPageLoad()

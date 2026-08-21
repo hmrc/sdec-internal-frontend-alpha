@@ -46,3 +46,19 @@ body:has(.sdec-dashboard-page) {
   margin-left: auto;
   text-align: right;
 }
+
+.sdec-recipient-banner {
+  background-color: #cfe0f0;
+  padding: govuk-spacing(3);
+  margin-bottom: govuk-spacing(6);
+
+  &__details {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: govuk-spacing(3);
+
+    @include govuk-media-query($until: tablet) {
+      grid-template-columns: 1fr;
+    }
+  }
+}

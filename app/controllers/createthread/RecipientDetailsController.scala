@@ -16,11 +16,7 @@
 
 package controllers.createthread
 
-import controllers.actions.{
-  DataRequiredAction,
-  DataRetrievalAction,
-  IdentifierAction
-}
+import controllers.actions.{DataRetrievalAction, IdentifierAction}
 import forms.RecipientDetailsFormProvider
 import models.{NormalMode, RecipientDetails, UserAnswers}
 import navigation.Navigator

@@ -32,33 +32,33 @@ import scala.concurrent.ExecutionContext
 import scala.util.control.NonFatal
 
 class DashboardController @Inject() (
-    val controllerComponents: MessagesControllerComponents,
-    identify: IdentifierAction,
-    threadSummaryConnector: ThreadSummaryConnector,
-    dashboardService: DashboardService,
-    view: DashboardView
+  val controllerComponents: MessagesControllerComponents,
+  identify:                 IdentifierAction,
+  threadSummaryConnector:   ThreadSummaryConnector,
+  dashboardService:         DashboardService,
+  view:                     DashboardView
 )(using ExecutionContext)
     extends FrontendBaseController
     with I18nSupport
     with Logging:
 
-    def onPageLoad(): Action[AnyContent] = identify.async { request =>
-      given HeaderCarrier =
-        HeaderCarrierConverter.fromRequestAndSession(request, request.session)
+  def onPageLoad(): Action[AnyContent] = identify.async { request =>
+    given HeaderCarrier =
+      HeaderCarrierConverter.fromRequestAndSession(request, request.session)
 
-      threadSummaryConnector
-        .getAll()
-        .map { threads =>
-          val dashboardThreads = dashboardService.buildThreads(threads)
-          Ok(
-            view(dashboardThreads)(using
-              request,
-              request2Messages(request)
-            )
+    threadSummaryConnector
+      .getAll()
+      .map { threads =>
+        val dashboardThreads = dashboardService.buildThreads(threads)
+        Ok(
+          view(dashboardThreads)(using
+            request,
+            request2Messages(request)
           )
-        }
-        .recover { case NonFatal(exception) =>
-          logger.error("Failed to load the Workspace", exception)
-          Redirect(routes.JourneyRecoveryController.onPageLoad())
-        }
-    }
+        )
+      }
+      .recover { case NonFatal(exception) =>
+        logger.error("Failed to load the Workspace", exception)
+        Redirect(routes.JourneyRecoveryController.onPageLoad())
+      }
+  }

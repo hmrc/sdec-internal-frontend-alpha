@@ -19,10 +19,7 @@ package viewmodels.govuk
 import play.api.data.Form
 import play.api.i18n.Messages
 import uk.gov.hmrc.govukfrontend.views.viewmodels.content.{Content, Text}
-import uk.gov.hmrc.govukfrontend.views.viewmodels.errorsummary.{
-  ErrorLink,
-  ErrorSummary
-}
+import uk.gov.hmrc.govukfrontend.views.viewmodels.errorsummary.{ErrorLink, ErrorSummary}
 
 object errorsummary extends ErrorSummaryFluency
 
@@ -31,14 +28,14 @@ trait ErrorSummaryFluency {
   object ErrorSummaryViewModel {
 
     def apply(
-        form: Form[_],
-        errorLinkOverrides: Map[String, String] = Map.empty
+      form:               Form[?],
+      errorLinkOverrides: Map[String, String] = Map.empty
     )(implicit messages: Messages): ErrorSummary = {
 
       val errors = form.errors.map { error =>
         ErrorLink(
           href = Some(s"#${errorLinkOverrides.getOrElse(error.key, error.key)}"),
-          content = Text(messages(error.message, error.args: _*))
+          content = Text(messages(error.message, error.args*))
         )
       }
 

@@ -32,14 +32,14 @@ import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
 class RecipientDetailsController @Inject() (
-    override val messagesApi: MessagesApi,
-    sessionRepository: SessionRepository,
-    navigator: Navigator,
-    identify: IdentifierAction,
-    getData: DataRetrievalAction,
-    formProvider: RecipientDetailsFormProvider,
-    val controllerComponents: MessagesControllerComponents,
-    view: RecipientDetailsView
+  override val messagesApi: MessagesApi,
+  sessionRepository:        SessionRepository,
+  navigator:                Navigator,
+  identify:                 IdentifierAction,
+  getData:                  DataRetrievalAction,
+  formProvider:             RecipientDetailsFormProvider,
+  val controllerComponents: MessagesControllerComponents,
+  view:                     RecipientDetailsView
 )(using ExecutionContext)
     extends FrontendBaseController
     with I18nSupport {
@@ -76,7 +76,7 @@ class RecipientDetailsController @Inject() (
 
             for {
               updatedAnswers <- Future
-                .fromTry(userAnswers.set(RecipientDetailsPage, value))
+                                  .fromTry(userAnswers.set(RecipientDetailsPage, value))
               _ <- sessionRepository.set(updatedAnswers)
             } yield Redirect(
               navigator.nextPage(RecipientDetailsPage, NormalMode, updatedAnswers)
@@ -86,9 +86,9 @@ class RecipientDetailsController @Inject() (
     }
 
   private def remapCaseReferenceError(
-      form: Form[RecipientDetails]
+    form: Form[RecipientDetails]
   ): Form[RecipientDetails] =
     form.copy(errors = form.errors.map { e =>
-      if (e.key.isEmpty) e.copy(key = "caseReferenceNumber") else e
+      if e.key.isEmpty then e.copy(key = "caseReferenceNumber") else e
     })
 }

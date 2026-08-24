@@ -29,8 +29,8 @@ class ThreadDetailsFormProvider @Inject() extends Mappings {
   private val messageMaxLength = 1000
 
   private def maxLengthWithOverage(
-      maximum: Int,
-      errorKey: String
+    maximum:  Int,
+    errorKey: String
   ): Constraint[String] =
     Constraint {
       case str if str.length <= maximum =>

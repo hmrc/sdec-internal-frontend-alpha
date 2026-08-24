@@ -24,16 +24,16 @@ import java.time.Instant
 import scala.util.{Failure, Success, Try}
 
 final case class UserAnswers(
-    id: String,
-    data: JsObject = Json.obj(),
-    lastUpdated: Instant = Instant.now
+  id:          String,
+  data:        JsObject = Json.obj(),
+  lastUpdated: Instant = Instant.now
 ) {
 
   def get[A](page: Gettable[A])(implicit rds: Reads[A]): Option[A] =
     Reads.optionNoError(Reads.at(page.path)).reads(data).getOrElse(None)
 
   def set[A](page: Settable[A], value: A)(implicit
-      writes: Writes[A]
+    writes: Writes[A]
   ): Try[UserAnswers] = {
 
     val updatedData = data.setObject(page.path, Json.toJson(value)) match {
@@ -69,7 +69,7 @@ object UserAnswers {
 
   val reads: Reads[UserAnswers] = {
 
-    import play.api.libs.functional.syntax._
+    import play.api.libs.functional.syntax.*
 
     (
       (__ \ "_id").read[String] and
@@ -80,7 +80,7 @@ object UserAnswers {
 
   val writes: OWrites[UserAnswers] = {
 
-    import play.api.libs.functional.syntax._
+    import play.api.libs.functional.syntax.*
 
     (
       (__ \ "_id").write[String] and

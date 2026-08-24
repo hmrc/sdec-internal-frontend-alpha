@@ -19,10 +19,7 @@ package viewmodels.govuk
 import play.api.data.Form
 import play.api.i18n.Messages
 import play.twirl.api.Html
-import uk.gov.hmrc.govukfrontend.views.viewmodels.checkboxes.{
-  CheckboxItem,
-  Checkboxes
-}
+import uk.gov.hmrc.govukfrontend.views.viewmodels.checkboxes.{CheckboxItem, Checkboxes}
 import uk.gov.hmrc.govukfrontend.views.viewmodels.content.Content
 import uk.gov.hmrc.govukfrontend.views.viewmodels.fieldset.{Fieldset, Legend}
 import uk.gov.hmrc.govukfrontend.views.viewmodels.hint.Hint
@@ -36,10 +33,10 @@ trait CheckboxFluency {
   object CheckboxesViewModel extends ErrorMessageAwareness with FieldsetFluency {
 
     def apply(
-        form: Form[_],
-        name: String,
-        items: Seq[CheckboxItem],
-        legend: Legend
+      form:   Form[?],
+      name:   String,
+      items:  Seq[CheckboxItem],
+      legend: Legend
     )(implicit messages: Messages): Checkboxes =
       apply(
         form = form,
@@ -49,10 +46,10 @@ trait CheckboxFluency {
       )
 
     def apply(
-        form: Form[_],
-        name: String,
-        items: Seq[CheckboxItem],
-        fieldset: Fieldset
+      form:     Form[?],
+      name:     String,
+      items:    Seq[CheckboxItem],
+      fieldset: Fieldset
     )(implicit messages: Messages): Checkboxes =
       Checkboxes(
         fieldset = Some(fieldset),
@@ -73,10 +70,10 @@ trait CheckboxFluency {
   object CheckboxItemViewModel {
 
     def apply(
-        content: Content,
-        fieldId: String,
-        index: Int,
-        value: String
+      content: Content,
+      fieldId: String,
+      index:   Int,
+      value:   String
     ): CheckboxItem =
       CheckboxItem(
         content = content,

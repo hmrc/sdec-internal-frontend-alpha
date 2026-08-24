@@ -33,9 +33,9 @@ import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
 class SessionRepository @Inject() (
-    mongoComponent: MongoComponent,
-    appConfig: FrontendAppConfig,
-    clock: Clock
+  mongoComponent: MongoComponent,
+  appConfig:      FrontendAppConfig,
+  clock:          Clock
 )(implicit ec: ExecutionContext)
     extends PlayMongoRepository[UserAnswers](
       collectionName = "user-answers",
@@ -55,7 +55,7 @@ class SessionRepository @Inject() (
 
   private def byId(id: String): Bson = Filters.equal("_id", id)
 
-  def keepAlive(id: String): Future[Boolean] = {
+  def keepAlive(id: String): Future[Boolean] =
     collection
       .updateOne(
         filter = byId(id),
@@ -63,9 +63,8 @@ class SessionRepository @Inject() (
       )
       .toFuture()
       .map(_ => true)
-  }
 
-  def get(id: String): Future[Option[UserAnswers]] = {
+  def get(id: String): Future[Option[UserAnswers]] =
     keepAlive(id).flatMap { _ =>
       Mdc.preservingMdc {
         collection
@@ -73,7 +72,6 @@ class SessionRepository @Inject() (
           .headOption()
       }
     }
-  }
 
   def set(answers: UserAnswers): Future[Boolean] = {
 
@@ -89,10 +87,9 @@ class SessionRepository @Inject() (
       .map(_ => true)
   }
 
-  def clear(id: String): Future[Boolean] = {
+  def clear(id: String): Future[Boolean] =
     collection
       .deleteOne(byId(id))
       .toFuture()
       .map(_ => true)
-  }
 }

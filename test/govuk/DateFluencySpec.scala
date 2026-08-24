@@ -27,11 +27,7 @@ import viewmodels.govuk.all.*
 
 import java.time.LocalDate
 
-class DateFluencySpec
-    extends AnyFreeSpec
-    with Matchers
-    with Mappings
-    with OptionValues {
+class DateFluencySpec extends AnyFreeSpec with Matchers with Mappings with OptionValues {
 
   ".apply" - {
 
@@ -92,12 +88,12 @@ class DateFluencySpec
 
       val result = DateViewModel(boundForm("value"), fieldset)
 
-      result.items.find(_.id == "value.day").value.classes must include(errorClass)
+      result.items.find(_.id == "value.day").value.classes   must include(errorClass)
       result.items.find(_.id == "value.month").value.classes must include(errorClass)
       result.items
         .find(_.id == "value.year")
         .value
-        .classes must not include (errorClass)
+        .classes must not include errorClass
     }
 
     "must highlight the day and year fields when the error is that a day and year are both missing" in {
@@ -114,7 +110,7 @@ class DateFluencySpec
       result.items
         .find(_.id == "value.month")
         .value
-        .classes must not include errorClass
+        .classes                                            must not include errorClass
       result.items.find(_.id == "value.year").value.classes must include(errorClass)
     }
 
@@ -132,7 +128,7 @@ class DateFluencySpec
       result.items
         .find(_.id == "value.day")
         .value
-        .classes must not include errorClass
+        .classes                                             must not include errorClass
       result.items.find(_.id == "value.month").value.classes must include(errorClass)
       result.items
         .find(_.id == "value.year")
@@ -153,9 +149,9 @@ class DateFluencySpec
       result.items
         .find(_.id == "value.day")
         .value
-        .classes must not include errorClass
+        .classes                                             must not include errorClass
       result.items.find(_.id == "value.month").value.classes must include(errorClass)
-      result.items.find(_.id == "value.year").value.classes must include(errorClass)
+      result.items.find(_.id == "value.year").value.classes  must include(errorClass)
     }
 
     "must highlight the year field when the error is that a year is missing" in {
@@ -176,7 +172,7 @@ class DateFluencySpec
       result.items
         .find(_.id == "value.month")
         .value
-        .classes must not include errorClass
+        .classes                                            must not include errorClass
       result.items.find(_.id == "value.year").value.classes must include(errorClass)
     }
 

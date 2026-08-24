@@ -32,14 +32,14 @@ import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
 class ThreadDetailsController @Inject() (
-    override val messagesApi: MessagesApi,
-    sessionRepository: SessionRepository,
-    navigator: Navigator,
-    identify: IdentifierAction,
-    getData: DataRetrievalAction,
-    formProvider: ThreadDetailsFormProvider,
-    val controllerComponents: MessagesControllerComponents,
-    view: ThreadDetailsView
+  override val messagesApi: MessagesApi,
+  sessionRepository:        SessionRepository,
+  navigator:                Navigator,
+  identify:                 IdentifierAction,
+  getData:                  DataRetrievalAction,
+  formProvider:             ThreadDetailsFormProvider,
+  val controllerComponents: MessagesControllerComponents,
+  view:                     ThreadDetailsView
 )(using ExecutionContext)
     extends FrontendBaseController
     with I18nSupport {
@@ -84,12 +84,11 @@ class ThreadDetailsController @Inject() (
           form
             .bindFromRequest()
             .fold(
-              (formWithErrors: Form[ThreadDetails]) =>
-                Future.successful(BadRequest(view(formWithErrors, recipient))),
+              (formWithErrors: Form[ThreadDetails]) => Future.successful(BadRequest(view(formWithErrors, recipient))),
               value =>
                 for {
                   updatedAnswers <- Future
-                    .fromTry(userAnswers.set(ThreadDetailsPage, value))
+                                      .fromTry(userAnswers.set(ThreadDetailsPage, value))
                   _ <- sessionRepository.set(updatedAnswers)
                 } yield Redirect(
                   navigator.nextPage(ThreadDetailsPage, NormalMode, updatedAnswers)

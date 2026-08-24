@@ -47,7 +47,7 @@ trait SpecBase
     app.injector.instanceOf[MessagesApi].preferred(FakeRequest())
 
   protected def applicationBuilder(
-      userAnswers: Option[UserAnswers] = None
+    userAnswers: Option[UserAnswers] = None
   ): GuiceApplicationBuilder =
     new GuiceApplicationBuilder()
       .overrides(

@@ -28,10 +28,10 @@ import views.html.{JourneyRecoveryContinueView, JourneyRecoveryStartAgainView}
 import javax.inject.Inject
 
 class JourneyRecoveryController @Inject() (
-    val controllerComponents: MessagesControllerComponents,
-    identify: IdentifierAction,
-    continueView: JourneyRecoveryContinueView,
-    startAgainView: JourneyRecoveryStartAgainView
+  val controllerComponents: MessagesControllerComponents,
+  identify:                 IdentifierAction,
+  continueView:             JourneyRecoveryContinueView,
+  startAgainView:           JourneyRecoveryStartAgainView
 ) extends FrontendBaseController
     with I18nSupport
     with Logging {

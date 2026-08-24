@@ -24,26 +24,20 @@ import org.scalatest.matchers.must.Matchers
 import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
 import play.api.libs.json.*
 
-class RichJsValueSpec
-    extends AnyFreeSpec
-    with Matchers
-    with ScalaCheckPropertyChecks
-    with OptionValues
-    with ModelGenerators {
+class RichJsValueSpec extends AnyFreeSpec with Matchers with ScalaCheckPropertyChecks with OptionValues with ModelGenerators {
 
   implicit def dontShrink[A]: Shrink[A] = Shrink.shrinkAny
 
-  val min                           = 2
-  val max                           = 10
+  val min = 2
+  val max = 10
   val nonEmptyAlphaStr: Gen[String] = Gen.alphaStr.suchThat(_.nonEmpty)
 
   def buildJsObj[B](keys: Seq[String], values: Seq[B])(implicit
-      writes: Writes[B]
-  ): JsObject = {
+    writes: Writes[B]
+  ): JsObject =
     keys.zip(values).foldLeft(JsObject.empty) { case (acc, (key, value)) =>
       acc + (key -> Json.toJson[B](value))
     }
-  }
 
   "set" - {
 
@@ -90,8 +84,7 @@ class RichJsValueSpec
       )
     }
 
-    "must add a value to an empty JsArray" in {
-
+    "must add a value to an empty JsArray" in
       forAll(nonEmptyAlphaStr) { newValue =>
         val value = Json.arr()
 
@@ -99,10 +92,8 @@ class RichJsValueSpec
 
         value.set(path, JsString(newValue)) mustEqual JsSuccess(Json.arr(newValue))
       }
-    }
 
-    "must add a value to the end of a JsArray" in {
-
+    "must add a value to the end of a JsArray" in
       forAll(nonEmptyAlphaStr, nonEmptyAlphaStr) { (oldValue, newValue) =>
         val value = Json.arr(oldValue)
 
@@ -112,21 +103,17 @@ class RichJsValueSpec
           Json.arr(oldValue, newValue)
         )
       }
-    }
 
-    "must change a value in an existing JsArray" in {
+    "must change a value in an existing JsArray" in
+      forAll(nonEmptyAlphaStr, nonEmptyAlphaStr, nonEmptyAlphaStr) { (firstValue, secondValue, newValue) =>
+        val value = Json.arr(firstValue, secondValue)
 
-      forAll(nonEmptyAlphaStr, nonEmptyAlphaStr, nonEmptyAlphaStr) {
-        (firstValue, secondValue, newValue) =>
-          val value = Json.arr(firstValue, secondValue)
+        val path = JsPath \ 0
 
-          val path = JsPath \ 0
-
-          value.set(path, JsString(newValue)) mustEqual JsSuccess(
-            Json.arr(newValue, secondValue)
-          )
+        value.set(path, JsString(newValue)) mustEqual JsSuccess(
+          Json.arr(newValue, secondValue)
+        )
       }
-    }
 
     "must set a nested value on a JsArray" in {
 
@@ -290,8 +277,8 @@ class RichJsValueSpec
 
       forAll(gen) { case (keys, values, keyToRemove, valueToRemove) =>
 
-        val initialObj: JsObject = keys.zip(values).foldLeft(JsObject.empty) {
-          case (acc, (key, value)) => acc + (key -> JsString(value))
+        val initialObj: JsObject = keys.zip(values).foldLeft(JsObject.empty) { case (acc, (key, value)) =>
+          acc + (key -> JsString(value))
         }
 
         val testObject: JsObject =
@@ -315,7 +302,7 @@ class RichJsValueSpec
       forAll(gen) { case (key: String, values: List[String], indexToRemove: Int) =>
 
         val valuesInArrays: Seq[JsValue] = values.map(Json.toJson[String])
-        val initialObj: JsObject         = buildJsObj(Seq(key), Seq(valuesInArrays))
+        val initialObj:     JsObject     = buildJsObj(Seq(key), Seq(valuesInArrays))
 
         val pathToRemove = JsPath \ key \ indexToRemove
 

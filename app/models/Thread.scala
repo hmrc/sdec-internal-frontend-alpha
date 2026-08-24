@@ -21,12 +21,12 @@ import play.api.libs.json.{Json, OFormat}
 import java.time.LocalDate
 
 final case class Thread(
-    threadReference: String,
-    relatedReference: Option[String],
-    externalContact: String,
-    status: String,
-    waitingOn: String,
-    deadline: Option[LocalDate]
+  threadReference:  String,
+  relatedReference: Option[String],
+  externalContact:  String,
+  status:           String,
+  waitingOn:        String,
+  deadline:         Option[LocalDate]
 )
 
 object Thread {

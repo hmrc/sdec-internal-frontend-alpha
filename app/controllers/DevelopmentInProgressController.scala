@@ -26,13 +26,13 @@ import javax.inject.{Inject, Singleton}
 
 @Singleton
 class DevelopmentInProgressController @Inject() (
-    val controllerComponents: MessagesControllerComponents,
-    identify: IdentifierAction,
-    view: DevelopmentInProgressView
+  val controllerComponents: MessagesControllerComponents,
+  identify:                 IdentifierAction,
+  view:                     DevelopmentInProgressView
 ) extends FrontendBaseController
     with I18nSupport:
 
-    def onPageLoad(): Action[AnyContent] = identify { request =>
-      given Request[AnyContent] = request
-      Ok(view())
-    }
+  def onPageLoad(): Action[AnyContent] = identify { request =>
+    given Request[AnyContent] = request
+    Ok(view())
+  }

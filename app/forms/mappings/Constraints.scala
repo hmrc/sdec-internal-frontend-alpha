@@ -32,12 +32,12 @@ trait Constraints {
     }
 
   protected def minimumValue[A](minimum: A, errorKey: String)(implicit
-      ev: Ordering[A]
+    ev: Ordering[A]
   ): Constraint[A] =
     Constraint { input =>
-      import ev._
+      import ev.*
 
-      if (input >= minimum) {
+      if input >= minimum then {
         Valid
       } else {
         Invalid(errorKey, minimum)
@@ -45,12 +45,12 @@ trait Constraints {
     }
 
   protected def maximumValue[A](maximum: A, errorKey: String)(implicit
-      ev: Ordering[A]
+    ev: Ordering[A]
   ): Constraint[A] =
     Constraint { input =>
-      import ev._
+      import ev.*
 
-      if (input <= maximum) {
+      if input <= maximum then {
         Valid
       } else {
         Invalid(errorKey, maximum)
@@ -58,12 +58,12 @@ trait Constraints {
     }
 
   protected def inRange[A](minimum: A, maximum: A, errorKey: String)(implicit
-      ev: Ordering[A]
+    ev: Ordering[A]
   ): Constraint[A] =
     Constraint { input =>
-      import ev._
+      import ev.*
 
-      if (input >= minimum && input <= maximum) {
+      if input >= minimum && input <= maximum then {
         Valid
       } else {
         Invalid(errorKey, minimum, maximum)
@@ -87,25 +87,25 @@ trait Constraints {
     }
 
   protected def maxDate(
-      maximum: LocalDate,
-      errorKey: String,
-      args: Any*
+    maximum:  LocalDate,
+    errorKey: String,
+    args:     Any*
   ): Constraint[LocalDate] =
     Constraint {
       case date if date.isAfter(maximum) =>
-        Invalid(errorKey, args: _*)
+        Invalid(errorKey, args*)
       case _ =>
         Valid
     }
 
   protected def minDate(
-      minimum: LocalDate,
-      errorKey: String,
-      args: Any*
+    minimum:  LocalDate,
+    errorKey: String,
+    args:     Any*
   ): Constraint[LocalDate] =
     Constraint {
       case date if date.isBefore(minimum) =>
-        Invalid(errorKey, args: _*)
+        Invalid(errorKey, args*)
       case _ =>
         Valid
     }
@@ -119,10 +119,10 @@ trait Constraints {
     }
 
   protected def minimumCurrency(minimum: BigDecimal, errorKey: String)(implicit
-      ev: Ordering[BigDecimal]
+    ev: Ordering[BigDecimal]
   ): Constraint[BigDecimal] =
     Constraint { input =>
-      if (input >= minimum) {
+      if input >= minimum then {
         Valid
       } else {
         Invalid(errorKey, CurrencyFormatter.currencyFormat(minimum))
@@ -130,10 +130,10 @@ trait Constraints {
     }
 
   protected def maximumCurrency(maximum: BigDecimal, errorKey: String)(implicit
-      ev: Ordering[BigDecimal]
+    ev: Ordering[BigDecimal]
   ): Constraint[BigDecimal] =
     Constraint { input =>
-      if (input <= maximum) {
+      if input <= maximum then {
         Valid
       } else {
         Invalid(errorKey, CurrencyFormatter.currencyFormat(maximum))

@@ -27,10 +27,10 @@ trait Generators extends ModelGenerators {
   implicit val dontShrink: Shrink[String] = Shrink.shrinkAny
 
   def genIntersperseString(
-      gen: Gen[String],
-      value: String,
-      frequencyV: Int = 1,
-      frequencyN: Int = 10
+    gen:        Gen[String],
+    value:      String,
+    frequencyV: Int = 1,
+    frequencyN: Int = 10
   ): Gen[String] = {
 
     val genValue: Gen[Option[String]] =
@@ -39,13 +39,11 @@ trait Generators extends ModelGenerators {
     for {
       seq1 <- gen
       seq2 <- Gen.listOfN(seq1.length, genValue)
-    } yield {
-      seq1.toSeq.zip(seq2).foldLeft("") {
-        case (acc, (n, Some(v))) =>
-          acc + n + v
-        case (acc, (n, _)) =>
-          acc + n
-      }
+    } yield seq1.toSeq.zip(seq2).foldLeft("") {
+      case (acc, (n, Some(v))) =>
+        acc + n + v
+      case (acc, (n, _)) =>
+        acc + n
     }
   }
 
@@ -103,7 +101,7 @@ trait Generators extends ModelGenerators {
     nonEmptyString suchThat (!excluded.contains(_))
 
   def oneOf[T](xs: Seq[Gen[T]]): Gen[T] =
-    if (xs.isEmpty) {
+    if xs.isEmpty then {
       throw new IllegalArgumentException("oneOf called on empty collection")
     } else {
       val vector = xs.toVector

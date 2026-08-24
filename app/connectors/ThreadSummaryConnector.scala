@@ -27,8 +27,8 @@ import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
 class ThreadSummaryConnector @Inject() (
-    httpClient: HttpClientV2,
-    appConfig: FrontendAppConfig
+  httpClient: HttpClientV2,
+  appConfig:  FrontendAppConfig
 )(using ec: ExecutionContext) {
 
   def getAll()(using hc: HeaderCarrier): Future[Seq[Thread]] =

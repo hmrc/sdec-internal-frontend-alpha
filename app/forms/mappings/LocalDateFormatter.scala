@@ -24,11 +24,11 @@ import java.time.{LocalDate, Month}
 import scala.util.{Failure, Success, Try}
 
 private[mappings] class LocalDateFormatter(
-    invalidKey: String,
-    allRequiredKey: String,
-    twoRequiredKey: String,
-    requiredKey: String,
-    args: Seq[String] = Seq.empty
+  invalidKey:     String,
+  allRequiredKey: String,
+  twoRequiredKey: String,
+  requiredKey:    String,
+  args:           Seq[String] = Seq.empty
 )(implicit messages: Messages)
     extends Formatter[LocalDate]
     with Formatters {
@@ -36,10 +36,10 @@ private[mappings] class LocalDateFormatter(
   private val fieldKeys: List[String] = List("day", "month", "year")
 
   private def toDate(
-      key: String,
-      day: Int,
-      month: Int,
-      year: Int
+    key:   String,
+    day:   Int,
+    month: Int,
+    year:  Int
   ): Either[Seq[FormError], LocalDate] =
     Try(LocalDate.of(year, month, day)) match {
       case Success(date) =>
@@ -49,8 +49,8 @@ private[mappings] class LocalDateFormatter(
     }
 
   private def formatDate(
-      key: String,
-      data: Map[String, String]
+    key:  String,
+    data: Map[String, String]
   ): Either[Seq[FormError], LocalDate] = {
 
     val int = intFormatter(
@@ -71,8 +71,8 @@ private[mappings] class LocalDateFormatter(
   }
 
   override def bind(
-      key: String,
-      data: Map[String, String]
+    key:  String,
+    data: Map[String, String]
   ): Either[Seq[FormError], LocalDate] = {
 
     val fields = fieldKeys.map { field =>
@@ -107,15 +107,13 @@ private[mappings] class LocalDateFormatter(
     )
 }
 
-private class MonthFormatter(invalidKey: String, args: Seq[String] = Seq.empty)
-    extends Formatter[Int]
-    with Formatters {
+private class MonthFormatter(invalidKey: String, args: Seq[String] = Seq.empty) extends Formatter[Int] with Formatters {
 
   private val baseFormatter = stringFormatter(invalidKey, args)
 
   override def bind(
-      key: String,
-      data: Map[String, String]
+    key:  String,
+    data: Map[String, String]
   ): Either[Seq[FormError], Int] = {
 
     val months = Month.values.toList

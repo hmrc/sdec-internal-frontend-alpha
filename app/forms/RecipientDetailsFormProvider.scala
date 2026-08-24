@@ -37,9 +37,8 @@ class RecipientDetailsFormProvider @Inject() extends Mappings {
 
   private val caseReferenceRequiredWhenRelated: Constraint[RecipientDetails] =
     Constraint("constraints.caseReferenceNumber") { details =>
-      if (
-        details.hasRelatedCase && details.caseReferenceNumber.forall(_.trim.isEmpty)
-      ) {
+      if details.hasRelatedCase && details.caseReferenceNumber.forall(_.trim.isEmpty)
+      then {
         Invalid("recipientDetails.error.caseReferenceNumber.required")
       } else {
         Valid
@@ -76,7 +75,7 @@ class RecipientDetailsFormProvider @Inject() extends Mappings {
             )
           )
         ),
-      "hasRelatedCase" -> boolean("recipientDetails.error.hasRelatedCase.required"),
+      "hasRelatedCase"      -> boolean("recipientDetails.error.hasRelatedCase.required"),
       "caseReferenceNumber" -> optional(
         text().verifying(
           maxLength(

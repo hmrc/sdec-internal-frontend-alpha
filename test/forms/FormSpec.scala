@@ -25,28 +25,26 @@ import play.api.data.{Form, FormError}
 trait FormSpec extends AnyFreeSpec with Matchers with OptionValues {
 
   def checkForError(
-      form: Form[_],
-      data: Map[String, String],
-      expectedErrors: Seq[FormError]
-  ): Assertion = {
+    form:           Form[?],
+    data:           Map[String, String],
+    expectedErrors: Seq[FormError]
+  ): Assertion =
 
     form
       .bind(data)
       .fold(
         formWithErrors => {
-          for (error <- expectedErrors)
+          for error <- expectedErrors do
             formWithErrors.errors must contain(
               FormError(error.key, error.message, error.args)
             )
           formWithErrors.errors.size mustBe expectedErrors.size
         },
-        _ => {
+        _ =>
           fail(
             "Expected a validation error when binding the form, but it was bound successfully."
           )
-        }
       )
-  }
 
   def error(key: String, value: String, args: Any*): Seq[FormError] = Seq(
     FormError(key, value, args)

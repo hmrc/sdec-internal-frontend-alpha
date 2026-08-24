@@ -19,13 +19,13 @@ package models
 import play.api.libs.json.{Json, OFormat}
 
 final case class RecipientDetails(
-    firstName: String,
-    lastName: String,
-    email: String,
-    phoneNumber: String,
-    nationalInsuranceNumber: String,
-    hasRelatedCase: Boolean,
-    caseReferenceNumber: Option[String]
+  firstName:               String,
+  lastName:                String,
+  email:                   String,
+  phoneNumber:             String,
+  nationalInsuranceNumber: String,
+  hasRelatedCase:          Boolean,
+  caseReferenceNumber:     Option[String]
 )
 
 object RecipientDetails {

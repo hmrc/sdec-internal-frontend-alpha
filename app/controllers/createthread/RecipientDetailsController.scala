@@ -32,63 +32,59 @@ import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
 class RecipientDetailsController @Inject() (
-    override val messagesApi: MessagesApi,
-    sessionRepository: SessionRepository,
-    navigator: Navigator,
-    identify: IdentifierAction,
-    getData: DataRetrievalAction,
-    formProvider: RecipientDetailsFormProvider,
-    val controllerComponents: MessagesControllerComponents,
-    view: RecipientDetailsView
+  override val messagesApi: MessagesApi,
+  sessionRepository:        SessionRepository,
+  navigator:                Navigator,
+  identify:                 IdentifierAction,
+  getData:                  DataRetrievalAction,
+  formProvider:             RecipientDetailsFormProvider,
+  val controllerComponents: MessagesControllerComponents,
+  view:                     RecipientDetailsView
 )(using ExecutionContext)
     extends FrontendBaseController
     with I18nSupport {
 
   private val form: Form[RecipientDetails] = formProvider()
 
-  def onPageLoad(): Action[AnyContent] =
-    (identify andThen getData) { request =>
-      given Request[AnyContent] = request
+  def onPageLoad(): Action[AnyContent] = (identify andThen getData) { request =>
+    given Request[AnyContent] = request
 
-      val userAnswers = request.userAnswers.getOrElse(UserAnswers(request.userId))
+    val userAnswers = request.userAnswers.getOrElse(UserAnswers(request.userId))
 
-      val preparedForm = userAnswers.get(RecipientDetailsPage) match {
-        case None        => form
-        case Some(value) => form.fill(value)
-      }
-
-      Ok(view(preparedForm))
+    val preparedForm = userAnswers.get(RecipientDetailsPage) match {
+      case None        => form
+      case Some(value) => form.fill(value)
     }
 
-  def onSubmit(): Action[AnyContent] =
-    (identify andThen getData).async { request =>
-      given Request[AnyContent] = request
+    Ok(view(preparedForm))
+  }
 
-      form
-        .bindFromRequest()
-        .fold(
-          (formWithErrors: Form[RecipientDetails]) =>
-            Future
-              .successful(BadRequest(view(remapCaseReferenceError(formWithErrors)))),
-          value => {
-            val userAnswers =
-              request.userAnswers.getOrElse(UserAnswers(request.userId))
+  def onSubmit(): Action[AnyContent] = (identify andThen getData).async { request =>
+    given Request[AnyContent] = request
 
-            for {
-              updatedAnswers <- Future
-                .fromTry(userAnswers.set(RecipientDetailsPage, value))
-              _ <- sessionRepository.set(updatedAnswers)
-            } yield Redirect(
-              navigator.nextPage(RecipientDetailsPage, NormalMode, updatedAnswers)
-            )
-          }
-        )
-    }
+    form
+      .bindFromRequest()
+      .fold(
+        (formWithErrors: Form[RecipientDetails]) =>
+          Future
+            .successful(BadRequest(view(remapCaseReferenceError(formWithErrors)))),
+        value => {
+          val userAnswers =
+            request.userAnswers.getOrElse(UserAnswers(request.userId))
 
-  private def remapCaseReferenceError(
-      form: Form[RecipientDetails]
-  ): Form[RecipientDetails] =
+          for {
+            updatedAnswers <- Future
+                                .fromTry(userAnswers.set(RecipientDetailsPage, value))
+            _ <- sessionRepository.set(updatedAnswers)
+          } yield Redirect(
+            navigator.nextPage(RecipientDetailsPage, NormalMode, updatedAnswers)
+          )
+        }
+      )
+  }
+
+  private def remapCaseReferenceError(form: Form[RecipientDetails]): Form[RecipientDetails] =
     form.copy(errors = form.errors.map { e =>
-      if (e.key.isEmpty) e.copy(key = "caseReferenceNumber") else e
+      if e.key.isEmpty then e.copy(key = "caseReferenceNumber") else e
     })
 }

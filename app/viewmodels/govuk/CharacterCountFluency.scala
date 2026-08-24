@@ -28,7 +28,7 @@ trait CharacterCountFluency {
   object CharacterCountViewModel extends ErrorMessageAwareness {
 
     def apply(field: Field, label: Label, maxLength: Int)(implicit
-        messages: Messages
+      messages: Messages
     ): CharacterCount =
       CharacterCount(
         id = field.id,

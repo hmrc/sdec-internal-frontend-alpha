@@ -32,70 +32,67 @@ import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
 class ThreadDetailsController @Inject() (
-    override val messagesApi: MessagesApi,
-    sessionRepository: SessionRepository,
-    navigator: Navigator,
-    identify: IdentifierAction,
-    getData: DataRetrievalAction,
-    formProvider: ThreadDetailsFormProvider,
-    val controllerComponents: MessagesControllerComponents,
-    view: ThreadDetailsView
+  override val messagesApi: MessagesApi,
+  sessionRepository:        SessionRepository,
+  navigator:                Navigator,
+  identify:                 IdentifierAction,
+  getData:                  DataRetrievalAction,
+  formProvider:             ThreadDetailsFormProvider,
+  val controllerComponents: MessagesControllerComponents,
+  view:                     ThreadDetailsView
 )(using ExecutionContext)
     extends FrontendBaseController
     with I18nSupport {
 
   private val form: Form[ThreadDetails] = formProvider()
 
-  def onPageLoad(): Action[AnyContent] =
-    (identify andThen getData) { request =>
-      given Request[AnyContent] = request
+  def onPageLoad(): Action[AnyContent] = (identify andThen getData) { request =>
+    given Request[AnyContent] = request
 
-      val userAnswers = request.userAnswers.getOrElse(UserAnswers(request.userId))
+    val userAnswers = request.userAnswers.getOrElse(UserAnswers(request.userId))
 
-      userAnswers.get(RecipientDetailsPage) match {
-        case None =>
+    userAnswers.get(RecipientDetailsPage) match {
+      case None =>
+        Redirect(
+          controllers.createthread.routes.RecipientDetailsController.onPageLoad()
+        )
+      case Some(recipient) =>
+        val preparedForm = userAnswers.get(ThreadDetailsPage) match {
+          case None        => form
+          case Some(value) => form.fill(value)
+        }
+
+        Ok(view(preparedForm, recipient))
+    }
+  }
+
+  def onSubmit(): Action[AnyContent] = (identify andThen getData).async { request =>
+    given Request[AnyContent] = request
+
+    val userAnswers = request.userAnswers.getOrElse(UserAnswers(request.userId))
+
+    userAnswers.get(RecipientDetailsPage) match {
+      case None =>
+        Future.successful(
           Redirect(
             controllers.createthread.routes.RecipientDetailsController.onPageLoad()
           )
-        case Some(recipient) =>
-          val preparedForm = userAnswers.get(ThreadDetailsPage) match {
-            case None        => form
-            case Some(value) => form.fill(value)
-          }
-
-          Ok(view(preparedForm, recipient))
-      }
-    }
-
-  def onSubmit(): Action[AnyContent] =
-    (identify andThen getData).async { request =>
-      given Request[AnyContent] = request
-
-      val userAnswers = request.userAnswers.getOrElse(UserAnswers(request.userId))
-
-      userAnswers.get(RecipientDetailsPage) match {
-        case None =>
-          Future.successful(
-            Redirect(
-              controllers.createthread.routes.RecipientDetailsController.onPageLoad()
-            )
+        )
+      case Some(recipient) =>
+        form
+          .bindFromRequest()
+          .fold(
+            (formWithErrors: Form[ThreadDetails]) => Future.successful(BadRequest(view(formWithErrors, recipient))),
+            value =>
+              for {
+                updatedAnswers <- Future
+                                    .fromTry(userAnswers.set(ThreadDetailsPage, value))
+                _ <- sessionRepository.set(updatedAnswers)
+              } yield Redirect(
+                navigator.nextPage(ThreadDetailsPage, NormalMode, updatedAnswers)
+              )
           )
-        case Some(recipient) =>
-          form
-            .bindFromRequest()
-            .fold(
-              (formWithErrors: Form[ThreadDetails]) =>
-                Future.successful(BadRequest(view(formWithErrors, recipient))),
-              value =>
-                for {
-                  updatedAnswers <- Future
-                    .fromTry(userAnswers.set(ThreadDetailsPage, value))
-                  _ <- sessionRepository.set(updatedAnswers)
-                } yield Redirect(
-                  navigator.nextPage(ThreadDetailsPage, NormalMode, updatedAnswers)
-                )
-            )
-      }
     }
+  }
 
 }

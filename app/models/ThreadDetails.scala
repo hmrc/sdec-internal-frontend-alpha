@@ -19,7 +19,7 @@ package models
 import play.api.libs.json.{Json, OFormat}
 
 final case class ThreadDetails(
-    message: String
+  message: String
 )
 
 object ThreadDetails {

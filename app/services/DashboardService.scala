@@ -26,27 +26,26 @@ import javax.inject.{Inject, Singleton}
 @Singleton
 class DashboardService @Inject() (clock: Clock):
 
-    private val dateFormatter: DateTimeFormatter =
-      DateTimeFormatter.ofPattern("dd/MM/yyyy")
+  private val dateFormatter: DateTimeFormatter =
+    DateTimeFormatter.ofPattern("dd/MM/yyyy")
 
-    def buildThreads(threads: Seq[Thread]): Seq[DashboardThread] =
-      threads.map(toDashboardThread)
+  def buildThreads(threads: Seq[Thread]): Seq[DashboardThread] =
+    threads.map(toDashboardThread)
 
-    private def toDashboardThread(thread: Thread): DashboardThread =
-      DashboardThread(
-        threadReference = thread.threadReference,
-        relatedReference = thread.relatedReference.getOrElse("-"),
-        externalContact = thread.externalContact,
-        status = thread.status,
-        waitingOn = thread.waitingOn,
-        deadline = thread.deadline
-          .map(_.format(dateFormatter))
-          .getOrElse("-"),
-        priority = determinePriority(thread)
-      )
+  private def toDashboardThread(thread: Thread): DashboardThread =
+    DashboardThread(
+      threadReference = thread.threadReference,
+      relatedReference = thread.relatedReference.getOrElse("-"),
+      externalContact = thread.externalContact,
+      status = thread.status,
+      waitingOn = thread.waitingOn,
+      deadline = thread.deadline
+        .map(_.format(dateFormatter))
+        .getOrElse("-"),
+      priority = determinePriority(thread)
+    )
 
-    private def determinePriority(thread: Thread): ThreadPriority =
-      if thread.deadline.exists(_.isBefore(LocalDate.now(clock))) then
-          ThreadPriority.Overdue
-      else if thread.status == "Needs action" then ThreadPriority.ResponseReceived
-      else ThreadPriority.None
+  private def determinePriority(thread: Thread): ThreadPriority =
+    if thread.deadline.exists(_.isBefore(LocalDate.now(clock))) then ThreadPriority.Overdue
+    else if thread.status == "Needs action" then ThreadPriority.ResponseReceived
+    else ThreadPriority.None

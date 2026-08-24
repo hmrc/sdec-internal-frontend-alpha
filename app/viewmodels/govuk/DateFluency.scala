@@ -31,8 +31,8 @@ trait DateFluency {
   object DateViewModel extends ErrorMessageAwareness {
 
     def apply(
-        field: Field,
-        legend: Legend
+      field:  Field,
+      legend: Legend
     )(implicit messages: Messages): DateInput =
       apply(
         field = field,
@@ -40,13 +40,13 @@ trait DateFluency {
       )
 
     def apply(
-        field: Field,
-        fieldset: Fieldset
+      field:    Field,
+      fieldset: Fieldset
     )(implicit messages: Messages): DateInput = {
 
       val errorClass = "govuk-input--error"
 
-      val dayError = field.error.exists(_.args.contains(messages("date.error.day")))
+      val dayError   = field.error.exists(_.args.contains(messages("date.error.day")))
       val monthError =
         field.error.exists(_.args.contains(messages("date.error.month")))
       val yearError =
@@ -54,9 +54,9 @@ trait DateFluency {
       val anySpecificError = dayError || monthError || yearError
       val allFieldsError   = field.error.isDefined && !anySpecificError
 
-      val dayErrorClass   = if (dayError || allFieldsError) errorClass else ""
-      val monthErrorClass = if (monthError || allFieldsError) errorClass else ""
-      val yearErrorClass  = if (yearError || allFieldsError) errorClass else ""
+      val dayErrorClass   = if dayError || allFieldsError then errorClass else ""
+      val monthErrorClass = if monthError || allFieldsError then errorClass else ""
+      val yearErrorClass  = if yearError || allFieldsError then errorClass else ""
 
       val items = Seq(
         InputItem(

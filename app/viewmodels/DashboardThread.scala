@@ -17,16 +17,16 @@
 package viewmodels
 
 enum ThreadPriority:
-    case Overdue
-    case ResponseReceived
-    case None
+  case Overdue
+  case ResponseReceived
+  case None
 
 final case class DashboardThread(
-    threadReference: String,
-    relatedReference: String,
-    externalContact: String,
-    status: String,
-    waitingOn: String,
-    deadline: String,
-    priority: ThreadPriority
+  threadReference:  String,
+  relatedReference: String,
+  externalContact:  String,
+  status:           String,
+  waitingOn:        String,
+  deadline:         String,
+  priority:         ThreadPriority
 )

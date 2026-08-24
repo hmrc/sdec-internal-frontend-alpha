@@ -43,8 +43,7 @@ class DashboardController @Inject() (
     with Logging:
 
   def onPageLoad(): Action[AnyContent] = identify.async { request =>
-    given HeaderCarrier =
-      HeaderCarrierConverter.fromRequestAndSession(request, request.session)
+    given HeaderCarrier = HeaderCarrierConverter.fromRequestAndSession(request, request.session)
 
     threadSummaryConnector
       .getAll()

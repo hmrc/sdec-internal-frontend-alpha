@@ -24,3 +24,6 @@ GET         /development-in-progress                     controllers.Development
 
 GET         /create-thread/recipient-details             controllers.createthread.RecipientDetailsController.onPageLoad()
 POST        /create-thread/recipient-details             controllers.createthread.RecipientDetailsController.onSubmit()
+
+GET         /create-thread/thread-details                controllers.createthread.ThreadDetailsController.onPageLoad()
+POST        /create-thread/thread-details                controllers.createthread.ThreadDetailsController.onSubmit()

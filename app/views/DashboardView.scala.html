@@ -30,7 +30,7 @@
 @(threads: Seq[DashboardThread])(implicit request: Request[_], messages: Messages)
 
 @layout(
-    pageTitle = titleNoForm(messages("sdec.dashboard.title")),
+    pageTitle = titleNoForm(messages("dashboard.title")),
     showBackLink = false
 ) {
 
@@ -44,7 +44,7 @@
         </div>
 
         @headingH2(
-            message = messages("sdec.dashboard.table.heading"),
+            message = messages("dashboard.table.heading"),
             size = "m",
             extraClasses = Seq("govuk-!-margin-bottom-3")
         )

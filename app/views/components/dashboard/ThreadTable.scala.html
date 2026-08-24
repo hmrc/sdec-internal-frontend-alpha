@@ -29,30 +29,30 @@
 
 @(threads: Seq[DashboardThread])(implicit messages: Messages)
 
-@labelledScrollWrapper(messages("sdec.dashboard.table.heading")) {
+@labelledScrollWrapper(messages("dashboard.table.heading")) {
     @govukTable(Table(
         classes = "sdec-workspace-table govuk-table--small-text-until-tablet",
         firstCellIsHeader = true,
         head = Some(Seq(
-            HeadCell(content = Text(messages("sdec.dashboard.table.threadReference"))),
-            HeadCell(content = Text(messages("sdec.dashboard.table.relatedReference"))),
-            HeadCell(content = Text(messages("sdec.dashboard.table.externalContact"))),
-            HeadCell(content = Text(messages("sdec.dashboard.table.status"))),
-            HeadCell(content = Text(messages("sdec.dashboard.table.waitingOn"))),
-            HeadCell(content = Text(messages("sdec.dashboard.table.deadline"))),
+            HeadCell(content = Text(messages("dashboard.table.threadReference"))),
+            HeadCell(content = Text(messages("dashboard.table.relatedReference"))),
+            HeadCell(content = Text(messages("dashboard.table.externalContact"))),
+            HeadCell(content = Text(messages("dashboard.table.status"))),
+            HeadCell(content = Text(messages("dashboard.table.waitingOn"))),
+            HeadCell(content = Text(messages("dashboard.table.deadline"))),
             HeadCell(content = Text(""))
         )),
         rows = threads.map { thread =>
             val priorityTag = thread.priority match {
                 case ThreadPriority.Overdue =>
                     govukTag(Tag(
-                        content = Text(messages("sdec.dashboard.table.tag.overdue")),
+                        content = Text(messages("dashboard.table.tag.overdue")),
                         classes = "govuk-tag--red"
                     ))
 
                 case ThreadPriority.ResponseReceived =>
                     govukTag(Tag(
-                        content = Text(messages("sdec.dashboard.table.tag.responseReceived")),
+                        content = Text(messages("dashboard.table.tag.responseReceived")),
                         classes = "govuk-tag--blue"
                     ))
 

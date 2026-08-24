@@ -16,6 +16,7 @@
 
 @import viewmodels._
 @import viewmodels.InputWidth._
+@import models.RecipientDetails
 
 @this(
         layout: templates.Layout,
@@ -26,7 +27,7 @@
         govukButton: GovukButton
 )
 
-@(form: Form[models.RecipientDetails])(implicit request: Request[_], messages: Messages)
+@(form: Form[RecipientDetails])(implicit request: Request[_], messages: Messages)
 
 @layout(pageTitle = title(form, messages("recipientDetails.title"))) {
 

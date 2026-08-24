@@ -72,7 +72,7 @@
 @header = {
     @hmrcInternalHeader(InternalHeader(
         homepageUrl = routes.DashboardController.onPageLoad().url,
-        serviceName = Some(messages("sdec.dashboard.service.name")),
+        serviceName = Some(messages("dashboard.service.name")),
         serviceUrl = routes.DashboardController.onPageLoad().url
     ))
 
@@ -80,10 +80,10 @@
         @govukServiceNavigation(ServiceNavigation(
             navigation = Seq(
                 ServiceNavigationItem(
-                    content = Text(messages("sdec.navigation.welcome", name))
+                    content = Text(messages("navigation.welcome", name))
                 ),
                 ServiceNavigationItem(
-                    content = Text(messages("sdec.navigation.workspace")),
+                    content = Text(messages("navigation.workspace")),
                     href = routes.DashboardController.onPageLoad().url,
                     active = rh.path == routes.DashboardController.onPageLoad().url
                 )

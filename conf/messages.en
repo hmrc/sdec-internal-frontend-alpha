@@ -48,22 +48,24 @@ signedOut.guidance = We did not save your answers.
 unauthorised.title = You can’t access this service with this account
 unauthorised.heading = You can’t access this service with this account
 
-sdec.dashboard.title = SDEC Internal Dashboard
-sdec.dashboard.service.name = Share Files Securely with Child Benefit Service
+developmentInProgress.title = Development in progress
 
-sdec.navigation.welcome = Welcome back: {0}
-sdec.navigation.workspace = Workspace
-sdec.navigation.notification = Notifications
+dashboard.title = SDEC Internal Dashboard
+dashboard.service.name = Share Files Securely with Child Benefit Service
 
-sdec.dashboard.table.heading = Shared work queue
-sdec.dashboard.table.threadReference = Thread reference
-sdec.dashboard.table.relatedReference = Related reference
-sdec.dashboard.table.externalContact = External contact
-sdec.dashboard.table.status = Status
-sdec.dashboard.table.waitingOn = Waiting on
-sdec.dashboard.table.deadline = Deadline
-sdec.dashboard.table.tag.overdue = Overdue
-sdec.dashboard.table.tag.responseReceived = Response received
+navigation.welcome = Welcome back: {0}
+navigation.workspace = Workspace
+navigation.notification = Notifications
+
+dashboard.table.heading = Shared work queue
+dashboard.table.threadReference = Thread reference
+dashboard.table.relatedReference = Related reference
+dashboard.table.externalContact = External contact
+dashboard.table.status = Status
+dashboard.table.waitingOn = Waiting on
+dashboard.table.deadline = Deadline
+dashboard.table.tag.overdue = Overdue
+dashboard.table.tag.responseReceived = Response received
 
 sdec.button.thread.create = Create new thread
 
@@ -95,5 +97,14 @@ recipientDetails.error.hasRelatedCase.required = Select yes if this relates to a
 recipientDetails.error.caseReferenceNumber.required = Enter a reference number related to the case
 recipientDetails.error.caseReferenceNumber.length = Reference number must be 30 characters or less
 
+threadDetails.title = Thread details
+threadDetails.caption = Create new thread
+threadDetails.heading = Thread details
+threadDetails.recipient.heading = Recipients details
+threadDetails.message = Write your message
+threadDetails.message.hint = Use this space to request any files or information from the recipient, or tell them why you've sent a file and what they need to do.
+
+threadDetails.error.message.required = Enter a message
+threadDetails.error.message.length = Message must be 1,000 characters or less. You have {0} characters too many
 
 

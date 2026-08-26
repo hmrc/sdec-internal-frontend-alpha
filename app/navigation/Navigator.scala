@@ -30,13 +30,13 @@ class Navigator @Inject() () {
     case RecipientDetailsPage =>
       _ => controllers.createthread.routes.ThreadDetailsController.onPageLoad()
     case ThreadDetailsPage =>
-      _ => routes.DevelopmentInProgressController.onPageLoad()
+      _ => controllers.createthread.routes.CheckYourAnswersController.onPageLoad()
     case _ =>
       _ => routes.DashboardController.onPageLoad()
   }
 
   private val checkRouteMap: Page => UserAnswers => Call = { case _ =>
-    _ => routes.CheckYourAnswersController.onPageLoad()
+    _ => controllers.createthread.routes.CheckYourAnswersController.onPageLoad()
   }
 
   def nextPage(page: Page, mode: Mode, userAnswers: UserAnswers): Call = mode match {

@@ -74,7 +74,8 @@ class RecipientDetailsFormProvider @Inject() extends Mappings {
               "recipientDetails.error.nationalInsuranceNumber.invalid"
             )
           )
-        ),
+        )
+        .transform[String](formatNino, identity),
       "hasRelatedCase"      -> boolean("recipientDetails.error.hasRelatedCase.required"),
       "caseReferenceNumber" -> optional(
         text().verifying(
@@ -98,4 +99,13 @@ class RecipientDetailsFormProvider @Inject() extends Mappings {
       )
     ).verifying(caseReferenceRequiredWhenRelated)
   )
+
+  private def formatNino(nino: String): String =
+    Seq(
+      nino.substring(0, 2),
+      nino.substring(2, 4),
+      nino.substring(4, 6),
+      nino.substring(6, 8),
+      nino.substring(8, 9)
+    ).mkString(" ")
 }

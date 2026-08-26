@@ -14,21 +14,23 @@
  * limitations under the License.
  */
 
-package controllers
+package controllers.createthread
 
 import com.google.inject.Inject
 import controllers.actions.{DataRequiredAction, DataRetrievalAction, IdentifierAction}
+import pages.{RecipientDetailsPage, ThreadDetailsPage}
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.*
+import services.createthread.CheckYourAnswersService
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
-import viewmodels.govuk.summarylist.*
-import views.html.CheckYourAnswersView
+import views.html.createthread.CheckYourAnswersView
 
 class CheckYourAnswersController @Inject() (
   override val messagesApi: MessagesApi,
   identify:                 IdentifierAction,
   getData:                  DataRetrievalAction,
   requireData:              DataRequiredAction,
+  checkYourAnswersService:  CheckYourAnswersService,
   val controllerComponents: MessagesControllerComponents,
   view:                     CheckYourAnswersView
 ) extends FrontendBaseController
@@ -37,10 +39,27 @@ class CheckYourAnswersController @Inject() (
   def onPageLoad(): Action[AnyContent] = (identify andThen getData andThen requireData) { request =>
     given Request[AnyContent] = request
 
-    val list = SummaryListViewModel(
-      rows = Seq.empty
-    )
+    (request.userAnswers.get(RecipientDetailsPage), request.userAnswers.get(ThreadDetailsPage)) match {
+      case (Some(recipient), Some(threadDetails)) =>
+        Ok(
+          view(
+            checkYourAnswersService.recipientDetailsList(recipient),
+            checkYourAnswersService.threadDetailsList(threadDetails)
+          )
+        )
+      case _ =>
+        Redirect(controllers.routes.JourneyRecoveryController.onPageLoad())
+    }
+  }
 
-    Ok(view(list))
+  def onSubmit(): Action[AnyContent] = (identify andThen getData andThen requireData) { request =>
+    given Request[AnyContent] = request
+
+    (request.userAnswers.get(RecipientDetailsPage), request.userAnswers.get(ThreadDetailsPage)) match {
+      case (Some(_), Some(_)) =>
+        Redirect(controllers.routes.DevelopmentInProgressController.onPageLoad())
+      case _ =>
+        Redirect(controllers.routes.JourneyRecoveryController.onPageLoad())
+    }
   }
 }

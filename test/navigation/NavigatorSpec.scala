@@ -49,7 +49,7 @@ class NavigatorSpec extends SpecBase {
           UnknownPage,
           CheckMode,
           UserAnswers("id")
-        ) mustBe routes.CheckYourAnswersController.onPageLoad()
+        ) mustBe controllers.createthread.routes.CheckYourAnswersController.onPageLoad()
       }
     }
   }

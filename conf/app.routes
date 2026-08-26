@@ -12,8 +12,6 @@ GET         /refresh-session                             controllers.KeepAliveCo
 
 GET         /there-is-a-problem                          controllers.JourneyRecoveryController.onPageLoad(continueUrl: Option[RedirectUrl] ?= None)
 
-GET         /check-your-answers                          controllers.CheckYourAnswersController.onPageLoad()
-
 GET         /account/sign-out-survey                     controllers.auth.AuthController.signOut()
 GET         /account/sign-out                            controllers.auth.AuthController.signOutNoSurvey()
 GET         /account/signed-out                          controllers.auth.SignedOutController.onPageLoad()
@@ -27,3 +25,6 @@ POST        /create-thread/recipient-details             controllers.createthrea
 
 GET         /create-thread/thread-details                controllers.createthread.ThreadDetailsController.onPageLoad()
 POST        /create-thread/thread-details                controllers.createthread.ThreadDetailsController.onSubmit()
+
+GET         /create-thread/check-your-answers            controllers.createthread.CheckYourAnswersController.onPageLoad()
+POST        /create-thread/check-your-answers            controllers.createthread.CheckYourAnswersController.onSubmit()

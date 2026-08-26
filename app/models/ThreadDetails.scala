@@ -18,8 +18,12 @@ package models
 
 import play.api.libs.json.{Json, OFormat}
 
+import java.time.LocalDate
+
 final case class ThreadDetails(
-  message: String
+  message:          String,
+  responseRequired: Boolean,
+  responseDate:     Option[LocalDate]
 )
 
 object ThreadDetails {

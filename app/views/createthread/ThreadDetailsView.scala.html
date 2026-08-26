@@ -22,10 +22,59 @@
         formHelper: FormWithCSRF,
         govukErrorSummary: GovukErrorSummary,
         govukCharacterCount: GovukCharacterCount,
-        govukButton: GovukButton
+        govukButton: GovukButton,
+        govukRadios: GovukRadios,
+        govukDateInput: GovukDateInput
 )
 
 @(form: Form[ThreadDetails], recipient: RecipientDetails)(implicit request: Request[_], messages: Messages)
+
+@responseDateHtml = {
+    @govukDateInput(DateInput(
+        id = "responseDate",
+        errorMessage =
+            form("responseDate").error
+                .orElse(
+                    form.globalErrors.find(
+                    _.message == "threadDetails.responseDate.error.requiredWhenYes"
+                )
+            )
+            .map { error =>
+                ErrorMessage(
+                    content = Text(messages(error.message, error.args*))
+                )
+        },
+        hint = Some(Hint(
+            content = Text(messages("threadDetails.responseDate.hint"))
+        )),
+        fieldset = Some(Fieldset(
+            legend = Some(Legend(
+                content = Text(messages("threadDetails.responseDate.legend")),
+                classes = "govuk-fieldset__legend--s"
+            ))
+        )),
+        items = Seq(
+            InputItem(
+                name = "responseDate.day",
+                classes = "govuk-input--width-2",
+                value = form("responseDate.day").value,
+                label = Some("Day")
+            ),
+            InputItem(
+                name = "responseDate.month",
+                classes = "govuk-input--width-2",
+                value = form("responseDate.month").value,
+                label = Some("Month")
+            ),
+            InputItem(
+                name = "responseDate.year",
+                classes = "govuk-input--width-4",
+                value = form("responseDate.year").value,
+                label = Some("Year")
+            )
+        )
+    ))
+}
 
 @layout(pageTitle = title(form, messages("threadDetails.title"))) {
 
@@ -58,6 +107,29 @@
                     maxLength = 1000
                 ).withHint(HintViewModel(messages("threadDetails.message.hint")))
             )
+
+            @govukRadios(Radios(
+                fieldset = Some(Fieldset(
+                    legend = Some(Legend(
+                        content = Text(messages("threadDetails.responseRequired.legend")),
+                        classes = "govuk-fieldset__legend--s"
+                    ))
+                )),
+                name = "responseRequired",
+                items = Seq(
+                    RadioItem(
+                        content = Text(messages("site.yes")),
+                        value = Some("true"),
+                        checked = form("responseRequired").value.contains("true"),
+                        conditionalHtml = Some(responseDateHtml)
+                    ),
+                    RadioItem(
+                        content = Text(messages("site.no")),
+                        value = Some("false"),
+                        checked = form("responseRequired").value.contains("false")
+                    )
+                )
+            ))
 
             @govukButton(
                 ButtonViewModel(messages("site.continue"))

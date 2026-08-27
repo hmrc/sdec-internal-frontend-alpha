@@ -41,43 +41,11 @@ private[mappings] class LocalDateFormatter(
     month: Int,
     year:  Int
   ): Either[Seq[FormError], LocalDate] =
-
-    if day < 1 || day > 31 then {
-      Left(
-        Seq(
-          FormError(
-            s"$key.day",
-            invalidKey,
-            args
-          )
-        )
-      )
-    } else if month < 1 || month > 12 then {
-      Left(
-        Seq(
-          FormError(
-            s"$key.month",
-            invalidKey,
-            args
-          )
-        )
-      )
-    } else {
-      Try(LocalDate.of(year, month, day)) match {
-        case Success(date) =>
-          Right(date)
-
-        case Failure(_) =>
-          Left(
-            Seq(
-              FormError(
-                s"$key.day",
-                invalidKey,
-                args
-              )
-            )
-          )
-      }
+    Try(LocalDate.of(year, month, day)) match {
+      case Success(date) =>
+        Right(date)
+      case Failure(_) =>
+        Left(Seq(FormError(key, invalidKey, args)))
     }
 
   private def formatDate(
@@ -98,22 +66,7 @@ private[mappings] class LocalDateFormatter(
       day   <- int.bind(s"$key.day", data)
       month <- month.bind(s"$key.month", data)
       year  <- int.bind(s"$key.year", data)
-      date  <- {
-        val yearString = data.getOrElse(s"$key.year", "")
-
-        if yearString.length != 4 then {
-          Left(
-            Seq(
-              FormError(
-                s"$key.year",
-                "threadDetails.responseDate.error.year.length"
-              )
-            )
-          )
-        } else {
-          toDate(key, day, month, year)
-        }
-      }
+      date  <- toDate(key, day, month, year)
     } yield date
   }
 
@@ -135,22 +88,10 @@ private[mappings] class LocalDateFormatter(
     fields.count(_._2.isDefined) match {
       case 3 =>
         formatDate(key, data).left.map {
-          _.map(_.copy(args = args))
+          _.map(_.copy(key = key, args = args))
         }
       case 2 =>
-        val missingField =
-          fields.collectFirst { case (field, None) =>
-            field
-          }.get
-
-        Left(
-          List(
-            FormError(
-              s"$key.$missingField",
-              s"threadDetails.responseDate.error.$missingField.required"
-            )
-          )
-        )
+        Left(List(FormError(key, requiredKey, missingFields ++ args)))
       case 1 =>
         Left(List(FormError(key, twoRequiredKey, missingFields ++ args)))
       case _ =>

@@ -70,6 +70,21 @@ trait Mappings extends Formatters with Constraints {
       )
     )
 
+  protected def threadDetailsDate(
+    invalidKey:     String,
+    allRequiredKey: String,
+    twoRequiredKey: String,
+    requiredKey:    String
+  )(implicit messages: Messages): FieldMapping[LocalDate] =
+    of(
+      new ThreadDetailsDateFormatter(
+        invalidKey,
+        allRequiredKey,
+        twoRequiredKey,
+        requiredKey
+      )
+    )
+
   protected def currency(
     requiredKey:    String = "error.required",
     invalidNumeric: String = "error.invalidNumeric",

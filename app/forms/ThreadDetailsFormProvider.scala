@@ -60,7 +60,7 @@ class ThreadDetailsFormProvider @Inject() extends Mappings {
           )
         ),
       "responseDate" ->
-        localDate(
+        threadDetailsDate(
           invalidKey = "threadDetails.responseDate.error.invalid",
           allRequiredKey = "threadDetails.responseDate.error.all.required",
           twoRequiredKey = "threadDetails.responseDate.error.two.required",

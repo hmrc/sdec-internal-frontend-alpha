@@ -232,4 +232,58 @@ class ConstraintsSpec extends AnyFreeSpec with Matchers with ScalaCheckPropertyC
       result mustEqual Invalid("error.max", CurrencyFormatter.currencyFormat(1))
     }
   }
+
+  "inRange" - {
+
+    "must return Valid when the value is within the range" in {
+      val result = inRange[Int](1, 10, "error.range").apply(5)
+
+      result mustEqual Valid
+    }
+
+    "must return Valid when the value equals the minimum" in {
+      val result = inRange[Int](1, 10, "error.range").apply(1)
+
+      result mustEqual Valid
+    }
+
+    "must return Valid when the value equals the maximum" in {
+      val result = inRange[Int](1, 10, "error.range").apply(10)
+
+      result mustEqual Valid
+    }
+
+    "must return Invalid when the value is below the range" in {
+      val result = inRange[Int](1, 10, "error.range").apply(0)
+
+      result mustEqual Invalid("error.range", 1, 10)
+    }
+
+    "must return Invalid when the value is above the range" in {
+      val result = inRange[Int](1, 10, "error.range").apply(11)
+
+      result mustEqual Invalid("error.range", 1, 10)
+    }
+  }
+
+  "nonEmptySet" - {
+
+    "must return Valid when the set contains values" in {
+      val result = nonEmptySet("error.empty")(Set("one"))
+
+      result mustEqual Valid
+    }
+
+    "must return Valid when the set contains multiple values" in {
+      val result = nonEmptySet("error.empty")(Set("one", "two"))
+
+      result mustEqual Valid
+    }
+
+    "must return Invalid when the set is empty" in {
+      val result = nonEmptySet("error.empty")(Set.empty[String])
+
+      result mustEqual Invalid("error.empty")
+    }
+  }
 }

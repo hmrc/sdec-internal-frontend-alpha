@@ -22,7 +22,7 @@ import models.{NormalMode, ThreadDetails, UserAnswers}
 import navigation.Navigator
 import pages.{RecipientDetailsPage, ThreadDetailsPage}
 import play.api.data.Form
-import play.api.i18n.{I18nSupport, MessagesApi}
+import play.api.i18n.{I18nSupport, Messages, MessagesApi}
 import play.api.mvc.*
 import repositories.SessionRepository
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
@@ -44,7 +44,11 @@ class ThreadDetailsController @Inject() (
     extends FrontendBaseController
     with I18nSupport {
 
-  private val form: Form[ThreadDetails] = formProvider()
+  private def form(implicit request: RequestHeader): Form[ThreadDetails] = {
+    given Messages = messagesApi.preferred(request)
+
+    formProvider()
+  }
 
   def onPageLoad(): Action[AnyContent] = (identify andThen getData) { request =>
     given Request[AnyContent] = request

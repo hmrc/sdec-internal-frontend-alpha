@@ -31,9 +31,6 @@ index.title = sdec-internal-frontend
 index.heading = sdec-internal-frontend
 index.guidance = Welcome to your new frontend. Please see the README file for a guide to getting started.
 
-checkYourAnswers.title = Check your answers
-checkYourAnswers.heading = Check your answers
-
 journeyRecovery.continue.title = Sorry, there is a problem with the service
 journeyRecovery.continue.heading = Sorry, there is a problem with the service
 journeyRecovery.continue.guidance = [Add content to explain how to proceed.]
@@ -118,5 +115,24 @@ threadDetails.responseDate.error.required = Enter the missing part of the date
 threadDetails.responseDate.error.invalid = Enter a valid response date
 threadDetails.responseDate.error.year.length = Enter the year using 4 digits
 threadDetails.responseDate.error.future = The response date must be in the future
+
+checkYourAnswers.title = Check your answers
+checkYourAnswers.caption = Create new thread
+checkYourAnswers.heading = Check your answers
+checkYourAnswers.hint = Use this page to make any changes before sending your request
+checkYourAnswers.warning = This is the last opportunity to change your request and confirm the details you are providing are correct. The recipient will be notified immediately once you confirm and send.
+checkYourAnswers.confirmAndSend = Confirm and send
+
+checkYourAnswers.recipientDetails.heading = Recipients details
+checkYourAnswers.recipientDetails.name = Their name
+checkYourAnswers.recipientDetails.email = Email address
+checkYourAnswers.recipientDetails.phoneNumber = Mobile number
+checkYourAnswers.recipientDetails.nationalInsuranceNumber = National Insurance number
+checkYourAnswers.recipientDetails.hasRelatedCase = Related case
+checkYourAnswers.recipientDetails.caseReferenceNumber = Related reference number
+
+checkYourAnswers.threadDetails.heading = Thread details
+checkYourAnswers.threadDetails.message = Message
+checkYourAnswers.threadDetails.responseDate = Response date
 
 

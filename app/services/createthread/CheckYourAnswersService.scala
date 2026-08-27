@@ -20,6 +20,7 @@ import models.{RecipientDetails, ThreadDetails}
 import play.api.i18n.Messages
 import uk.gov.hmrc.govukfrontend.views.viewmodels.content.Text
 import uk.gov.hmrc.govukfrontend.views.viewmodels.summarylist.SummaryList
+import utils.DateTimeFormats.toDateFormat
 import viewmodels.govuk.summarylist.*
 
 import javax.inject.Singleton
@@ -63,7 +64,8 @@ class CheckYourAnswersService:
 
     SummaryListViewModel(
       Seq(
-        row("checkYourAnswers.threadDetails.message", threadDetails.message, changeHref)
+        row("checkYourAnswers.threadDetails.message", threadDetails.message, changeHref),
+        row("checkYourAnswers.threadDetails.responseDate", threadDetails.responseDate.toDateFormat, changeHref)
       )
     )
 

@@ -23,7 +23,6 @@
         govukErrorSummary: GovukErrorSummary,
         govukCharacterCount: GovukCharacterCount,
         govukButton: GovukButton,
-        govukRadios: GovukRadios,
         govukDateInput: GovukDateInput
 )
 
@@ -32,17 +31,10 @@
 @responseDateHtml = {
     @govukDateInput(DateInput(
         id = "responseDate",
-        errorMessage =
-            form("responseDate").error
-                .orElse(
-                    form.globalErrors.find(
-                    _.message == "threadDetails.responseDate.error.requiredWhenYes"
-                )
+        errorMessage = form("responseDate").error.map { error =>
+            ErrorMessage(
+                content = Text(messages(error.message, error.args*))
             )
-            .map { error =>
-                ErrorMessage(
-                    content = Text(messages(error.message, error.args*))
-                )
         },
         hint = Some(Hint(
             content = Text(messages("threadDetails.responseDate.hint"))
@@ -108,28 +100,7 @@
                 ).withHint(HintViewModel(messages("threadDetails.message.hint")))
             )
 
-            @govukRadios(Radios(
-                fieldset = Some(Fieldset(
-                    legend = Some(Legend(
-                        content = Text(messages("threadDetails.responseRequired.legend")),
-                        classes = "govuk-fieldset__legend--s"
-                    ))
-                )),
-                name = "responseRequired",
-                items = Seq(
-                    RadioItem(
-                        content = Text(messages("site.yes")),
-                        value = Some("true"),
-                        checked = form("responseRequired").value.contains("true"),
-                        conditionalHtml = Some(responseDateHtml)
-                    ),
-                    RadioItem(
-                        content = Text(messages("site.no")),
-                        value = Some("false"),
-                        checked = form("responseRequired").value.contains("false")
-                    )
-                )
-            ))
+            @responseDateHtml
 
             @govukButton(
                 ButtonViewModel(messages("site.continue"))

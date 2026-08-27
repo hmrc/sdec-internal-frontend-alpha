@@ -107,11 +107,8 @@ threadDetails.message.hint = Use this space to request any files or information 
 threadDetails.error.message.required = Enter a message
 threadDetails.error.message.length = Message must be 1,000 characters or less. You have {0} characters too many
 
-threadDetails.responseRequired.legend = Do you need a response by a specific date?
-threadDetails.responseRequired.error.required = Select whether you need a response by a specific date
-threadDetails.responseDate.legend = When do you need a response?
+threadDetails.responseDate.legend = When do you need a reply?
 threadDetails.responseDate.hint = Enter a deadline for a response from your recipient. Use a realistic deadline which gives them time to respond.
-
 threadDetails.responseDate.error.requiredWhenYes = Enter the date you need a response by
 
 threadDetails.responseDate.error.all.required = Enter the day, month and year

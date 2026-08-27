@@ -40,16 +40,14 @@ class ThreadDetailsControllerSpec extends SpecBase {
 
   private val threadDetails = ThreadDetails(
     message = "Please provide the requested information.",
-    responseRequired = true,
-    responseDate = Some(LocalDate.now().plusDays(7))
+    responseDate = LocalDate.now().plusDays(7)
   )
 
   private val validFormData = Map(
     "message"            -> "Please provide the requested information.",
-    "responseRequired"   -> "true",
-    "responseDate.day"   -> threadDetails.responseDate.get.getDayOfMonth.toString,
-    "responseDate.month" -> threadDetails.responseDate.get.getMonthValue.toString,
-    "responseDate.year"  -> threadDetails.responseDate.get.getYear.toString
+    "responseDate.day"   -> threadDetails.responseDate.getDayOfMonth.toString,
+    "responseDate.month" -> threadDetails.responseDate.getMonthValue.toString,
+    "responseDate.year"  -> threadDetails.responseDate.getYear.toString
   )
 
   "ThreadDetailsController" - {
@@ -130,8 +128,10 @@ class ThreadDetailsControllerSpec extends SpecBase {
         val request =
           FakeRequest(POST, controllers.createthread.routes.ThreadDetailsController.onSubmit().url)
             .withFormUrlEncodedBody(
-              "message"          -> "",
-              "responseRequired" -> "true"
+              "message"            -> "",
+              "responseDate.day"   -> "",
+              "responseDate.month" -> "",
+              "responseDate.year"  -> ""
             )
 
         val result = route(application, request).value

@@ -21,9 +21,8 @@ import play.api.libs.json.{Json, OFormat}
 import java.time.LocalDate
 
 final case class ThreadDetails(
-  message:          String,
-  responseRequired: Boolean,
-  responseDate:     Option[LocalDate]
+  message:      String,
+  responseDate: LocalDate
 )
 
 object ThreadDetails {

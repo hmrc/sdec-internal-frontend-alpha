@@ -31,10 +31,15 @@
 @responseDateHtml = {
     @govukDateInput(DateInput(
         id = "responseDate",
-        errorMessage = form("responseDate").error.map { error =>
-            ErrorMessage(
-                content = Text(messages(error.message, error.args*))
-            )
+        errorMessage =
+            form("responseDate").error
+                .orElse(form("responseDate.day").error)
+                .orElse(form("responseDate.month").error)
+                .orElse(form("responseDate.year").error)
+                .map { error =>
+                    ErrorMessage(
+                        content = Text(messages(error.message, error.args*))
+                )
         },
         hint = Some(Hint(
             content = Text(messages("threadDetails.responseDate.hint"))
@@ -48,21 +53,33 @@
         items = Seq(
             InputItem(
                 name = "responseDate.day",
-                classes = "govuk-input--width-2",
+                classes = s"govuk-input--width-2${if form("responseDate.day").hasErrors then " govuk-input--error" else ""}",
                 value = form("responseDate.day").value,
-                label = Some("Day")
+                label = Some("Day"),
+                attributes = Map(
+                    "maxlength" -> "2",
+                    "inputmode" -> "numeric"
+                )
             ),
             InputItem(
                 name = "responseDate.month",
-                classes = "govuk-input--width-2",
+                classes = s"govuk-input--width-2${if form("responseDate.month").hasErrors then " govuk-input--error" else ""}",
                 value = form("responseDate.month").value,
-                label = Some("Month")
+                label = Some("Month"),
+                attributes = Map(
+                    "maxlength" -> "2",
+                    "inputmode" -> "numeric"
+                )
             ),
             InputItem(
                 name = "responseDate.year",
-                classes = "govuk-input--width-4",
+                classes = s"govuk-input--width-4${if form("responseDate.year").hasErrors then " govuk-input--error" else ""}",
                 value = form("responseDate.year").value,
-                label = Some("Year")
+                label = Some("Year"),
+                attributes = Map(
+                    "maxlength" -> "4",
+                    "inputmode" -> "numeric"
+                )
             )
         )
     ))

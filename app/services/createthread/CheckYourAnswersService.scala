@@ -75,6 +75,5 @@ class CheckYourAnswersService:
       value = ValueViewModel(Text(value)),
       actions = Seq(
         ActionItemViewModel(Text(messages("site.change")), changeHref)
-          .withVisuallyHiddenText(messages(s"$labelKey.hidden"))
       )
     )

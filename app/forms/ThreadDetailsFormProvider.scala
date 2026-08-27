@@ -21,7 +21,9 @@ import models.ThreadDetails
 import play.api.data.Form
 import play.api.data.Forms.*
 import play.api.data.validation.{Constraint, Invalid, Valid}
+import play.api.i18n.Messages
 
+import java.time.LocalDate
 import javax.inject.Inject
 
 class ThreadDetailsFormProvider @Inject() extends Mappings {
@@ -39,7 +41,16 @@ class ThreadDetailsFormProvider @Inject() extends Mappings {
         Invalid(errorKey, str.length - maximum)
     }
 
-  def apply(): Form[ThreadDetails] = Form(
+  private val responseDateMustBeInFuture: Constraint[LocalDate] =
+    Constraint {
+      case date if date.isAfter(LocalDate.now().minusDays(1)) =>
+        Valid
+
+      case _ =>
+        Invalid("threadDetails.responseDate.error.future")
+    }
+
+  def apply()(implicit messages: Messages): Form[ThreadDetails] = Form(
     mapping(
       "message" -> text("threadDetails.error.message.required")
         .verifying(
@@ -47,7 +58,23 @@ class ThreadDetailsFormProvider @Inject() extends Mappings {
             messageMaxLength,
             "threadDetails.error.message.length"
           )
+        ),
+      "responseDate" ->
+        localDate(
+          invalidKey = "threadDetails.responseDate.error.invalid",
+          allRequiredKey = "threadDetails.responseDate.error.all.required",
+          twoRequiredKey = "threadDetails.responseDate.error.two.required",
+          requiredKey = "threadDetails.responseDate.error.required"
+        ).verifying(responseDateMustBeInFuture)
+    )(
+      ThreadDetails.apply
+    )(threadDetails =>
+      Some(
+        (
+          threadDetails.message,
+          threadDetails.responseDate
         )
-    )(ThreadDetails.apply)(td => Some(td.message))
+      )
+    )
   )
 }

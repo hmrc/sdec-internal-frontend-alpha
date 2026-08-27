@@ -50,5 +50,26 @@ class DashboardControllerSpec extends SpecBase {
         status(result) mustEqual OK
       }
     }
+
+    "must redirect to Journey Recovery when loading threads fails" in {
+      val application = baseApplication.build()
+
+      val exception = new RuntimeException("Unable to load threads")
+
+      when(mockThreadSummaryConnector.getAll()(using any[HeaderCarrier]))
+        .thenReturn(Future.failed(exception))
+
+      running(application) {
+        val request =
+          FakeRequest(GET, routes.DashboardController.onPageLoad().url)
+
+        val result = route(application, request).value
+
+        status(result) mustEqual SEE_OTHER
+
+        redirectLocation(result).value mustEqual
+          routes.JourneyRecoveryController.onPageLoad().url
+      }
+    }
   }
 }

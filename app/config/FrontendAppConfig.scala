@@ -17,6 +17,7 @@
 package config
 
 import com.google.inject.{Inject, Singleton}
+import models.ThreadReference
 import play.api.Configuration
 import play.api.i18n.Lang
 import play.api.mvc.RequestHeader
@@ -52,8 +53,8 @@ class FrontendAppConfig @Inject() (configuration: Configuration) {
   private val threadInfoApi =
     configuration.get[Service]("microservice.services.sdec-threadinfo-api-alpha")
 
-  val threadSummariesUrl: String =
-    s"${threadInfoApi.baseUrl}/sdec-threadinfo-api-alpha/threads"
+  val threadSummariesUrl:                          String = s"${threadInfoApi.baseUrl}/sdec-threadinfo-api-alpha/threads"
+  def threadUrl(threadReference: ThreadReference): String = s"$threadSummariesUrl/${threadReference.value}"
 
   val timeout:   Int = configuration.get[Int]("timeout-dialog.timeout")
   val countdown: Int = configuration.get[Int]("timeout-dialog.countdown")

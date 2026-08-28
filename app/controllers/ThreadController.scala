@@ -18,46 +18,47 @@ package controllers
 
 import connectors.ThreadConnector
 import controllers.actions.IdentifierAction
+import handlers.ErrorHandler
+import models.ThreadReference
 import play.api.Logging
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
-import services.DashboardService
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import uk.gov.hmrc.play.http.HeaderCarrierConverter
-import views.html.DashboardView
+import views.html.ThreadDetailsView
 
 import javax.inject.Inject
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{ExecutionContext, Future}
 import scala.util.control.NonFatal
 
-class DashboardController @Inject() (
+class ThreadController @Inject() (
   val controllerComponents: MessagesControllerComponents,
   identify:                 IdentifierAction,
-  dashboardService:         DashboardService,
-  view:                     DashboardView
+  threadConnector:          ThreadConnector,
+  errorHandler:             ErrorHandler,
+  view:                     ThreadDetailsView
 )(using ExecutionContext)
     extends FrontendBaseController
     with I18nSupport
     with Logging {
 
-  def onPageLoad(): Action[AnyContent] = identify.async { request =>
+  def onPageLoad(threadReference: ThreadReference): Action[AnyContent] = identify.async { request =>
     given HeaderCarrier = HeaderCarrierConverter.fromRequestAndSession(request, request.session)
 
-    dashboardService
-      .getDashboardThreads()
-      .map { dashboardThreads =>
-        Ok(
-          view(dashboardThreads)(using
-            request,
-            request2Messages(request)
-          )
-        )
+    threadConnector
+      .get(threadReference)
+      .flatMap {
+        case Some(thread) =>
+          Future.successful(Ok(view(thread)(using request, request2Messages(request))))
+        case None =>
+          errorHandler.notFoundTemplate(using request).map(NotFound(_))
       }
       .recover { case NonFatal(exception) =>
-        logger.error("Failed to load the Workspace", exception)
+        logger.error(s"Failed to load Thread (ref: ${threadReference.value})", exception)
         Redirect(routes.JourneyRecoveryController.onPageLoad())
       }
+
   }
 
 }

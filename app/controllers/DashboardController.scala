@@ -16,7 +16,6 @@
 
 package controllers
 
-import connectors.ThreadSummaryConnector
 import controllers.actions.IdentifierAction
 import play.api.Logging
 import play.api.i18n.I18nSupport
@@ -34,7 +33,6 @@ import scala.util.control.NonFatal
 class DashboardController @Inject() (
   val controllerComponents: MessagesControllerComponents,
   identify:                 IdentifierAction,
-  threadSummaryConnector:   ThreadSummaryConnector,
   dashboardService:         DashboardService,
   view:                     DashboardView
 )(using ExecutionContext)
@@ -45,10 +43,9 @@ class DashboardController @Inject() (
   def onPageLoad(): Action[AnyContent] = identify.async { request =>
     given HeaderCarrier = HeaderCarrierConverter.fromRequestAndSession(request, request.session)
 
-    threadSummaryConnector
-      .getAll()
-      .map { threads =>
-        val dashboardThreads = dashboardService.buildThreads(threads)
+    dashboardService
+      .getDashboardThreads()
+      .map { dashboardThreads =>
         Ok(
           view(dashboardThreads)(using
             request,

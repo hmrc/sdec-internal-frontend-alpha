@@ -16,15 +16,20 @@
 
 package service
 
+import base.SpecBase
 import models.Thread
-import org.scalatest.matchers.should.Matchers
-import org.scalatest.wordspec.AnyWordSpec
+import org.mockito.ArgumentMatchers.any
+import org.mockito.Mockito.when
 import services.DashboardService
+import uk.gov.hmrc.http.HeaderCarrier
 import viewmodels.{DashboardThread, ThreadPriority}
 
 import java.time.{Clock, LocalDate, ZoneOffset}
+import scala.concurrent.{ExecutionContext, Future}
 
-class DashboardServiceSpec extends AnyWordSpec with Matchers {
+class DashboardServiceSpec()(using ExecutionContext) extends SpecBase {
+
+  private given HeaderCarrier = HeaderCarrier()
 
   private val today = LocalDate.of(2026, 8, 26)
 
@@ -34,12 +39,12 @@ class DashboardServiceSpec extends AnyWordSpec with Matchers {
       ZoneOffset.UTC
     )
 
-  private val service = new DashboardService(clock)
+  private val service = new DashboardService(mockThreadSummaryConnector, clock)
 
-  "buildThreads" should {
+  "getDashboardThreads" - {
 
     "return an empty sequence when no threads are provided" in {
-      service.buildThreads(Seq.empty) shouldBe Seq.empty
+      dashboardThreadsFor(Seq.empty) mustBe Seq.empty
     }
 
     "map a thread to a dashboard thread" in {
@@ -52,7 +57,7 @@ class DashboardServiceSpec extends AnyWordSpec with Matchers {
         deadline = Some(LocalDate.of(2026, 8, 30))
       )
 
-      service.buildThreads(Seq(thread)) shouldBe Seq(
+      dashboardThreadsFor(Seq(thread)) mustBe Seq(
         DashboardThread(
           threadReference = "THREAD001",
           relatedReference = "CASE001",
@@ -75,7 +80,7 @@ class DashboardServiceSpec extends AnyWordSpec with Matchers {
         deadline = None
       )
 
-      service.buildThreads(Seq(thread)) shouldBe Seq(
+      dashboardThreadsFor(Seq(thread)) mustBe Seq(
         DashboardThread(
           threadReference = "THREAD002",
           relatedReference = "-",
@@ -98,7 +103,7 @@ class DashboardServiceSpec extends AnyWordSpec with Matchers {
         deadline = Some(LocalDate.of(2026, 1, 5))
       )
 
-      service.buildThreads(Seq(thread)).head.deadline shouldBe "05/01/2026"
+      dashboardThreadsFor(Seq(thread)).head.deadline mustBe "05/01/2026"
     }
 
     "set priority to Overdue when the deadline is before today" in {
@@ -111,7 +116,7 @@ class DashboardServiceSpec extends AnyWordSpec with Matchers {
         deadline = Some(today.minusDays(1))
       )
 
-      service.buildThreads(Seq(thread)).head.priority shouldBe ThreadPriority.Overdue
+      dashboardThreadsFor(Seq(thread)).head.priority mustBe ThreadPriority.Overdue
     }
 
     "set priority to ResponseReceived when the status is Needs action" in {
@@ -124,7 +129,7 @@ class DashboardServiceSpec extends AnyWordSpec with Matchers {
         deadline = Some(today.plusDays(1))
       )
 
-      service.buildThreads(Seq(thread)).head.priority shouldBe
+      dashboardThreadsFor(Seq(thread)).head.priority mustBe
         ThreadPriority.ResponseReceived
     }
 
@@ -138,7 +143,7 @@ class DashboardServiceSpec extends AnyWordSpec with Matchers {
         deadline = Some(today.minusDays(1))
       )
 
-      service.buildThreads(Seq(thread)).head.priority shouldBe ThreadPriority.Overdue
+      dashboardThreadsFor(Seq(thread)).head.priority mustBe ThreadPriority.Overdue
     }
 
     "set priority to None when the deadline is today" in {
@@ -151,7 +156,14 @@ class DashboardServiceSpec extends AnyWordSpec with Matchers {
         deadline = Some(today)
       )
 
-      service.buildThreads(Seq(thread)).head.priority shouldBe ThreadPriority.None
+      dashboardThreadsFor(Seq(thread)).head.priority mustBe ThreadPriority.None
     }
+  }
+
+  private def dashboardThreadsFor(threads: Seq[Thread]): Seq[DashboardThread] = {
+    when(mockThreadSummaryConnector.getAll()(using any[HeaderCarrier]))
+      .thenReturn(Future.successful(threads))
+
+    service.getDashboardThreads().futureValue
   }
 }

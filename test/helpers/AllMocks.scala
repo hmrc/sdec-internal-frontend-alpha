@@ -23,8 +23,7 @@ import org.scalatestplus.mockito.MockitoSugar
 
 trait AllMocks extends MockitoSugar { me: BeforeAndAfterEach =>
 
-  val mockThreadSummaryConnector: ThreadSummaryConnector =
-    mock[ThreadSummaryConnector]
+  val mockThreadSummaryConnector: ThreadSummaryConnector = mock[ThreadSummaryConnector]
 
   override protected def beforeEach(): Unit =
     Seq(

@@ -20,6 +20,9 @@ import base.SpecBase
 import models.Thread
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.when
+import models.{Thread, ThreadReference}
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.wordspec.AnyWordSpec
 import services.DashboardService
 import uk.gov.hmrc.http.HeaderCarrier
 import viewmodels.{DashboardThread, ThreadPriority}
@@ -39,7 +42,7 @@ class DashboardServiceSpec()(using ExecutionContext) extends SpecBase {
       ZoneOffset.UTC
     )
 
-  private val service = new DashboardService(mockThreadSummaryConnector, clock)
+  private val service = new DashboardService(mockThreadConnector, clock)
 
   "getDashboardThreads" - {
 
@@ -49,7 +52,7 @@ class DashboardServiceSpec()(using ExecutionContext) extends SpecBase {
 
     "map a thread to a dashboard thread" in {
       val thread = Thread(
-        threadReference = "THREAD001",
+        threadReference = ThreadReference("THREAD001"),
         relatedReference = Some("CASE001"),
         externalContact = "Jane Smith",
         status = "Open",
@@ -59,7 +62,7 @@ class DashboardServiceSpec()(using ExecutionContext) extends SpecBase {
 
       dashboardThreadsFor(Seq(thread)) mustBe Seq(
         DashboardThread(
-          threadReference = "THREAD001",
+          threadReference = ThreadReference("THREAD001"),
           relatedReference = "CASE001",
           externalContact = "Jane Smith",
           status = "Open",
@@ -72,7 +75,7 @@ class DashboardServiceSpec()(using ExecutionContext) extends SpecBase {
 
     "use a hyphen when the related reference is missing" in {
       val thread = Thread(
-        threadReference = "THREAD002",
+        threadReference = ThreadReference("THREAD002"),
         relatedReference = None,
         externalContact = "John Smith",
         status = "Open",
@@ -82,7 +85,7 @@ class DashboardServiceSpec()(using ExecutionContext) extends SpecBase {
 
       dashboardThreadsFor(Seq(thread)) mustBe Seq(
         DashboardThread(
-          threadReference = "THREAD002",
+          threadReference = ThreadReference("THREAD002"),
           relatedReference = "-",
           externalContact = "John Smith",
           status = "Open",
@@ -95,7 +98,7 @@ class DashboardServiceSpec()(using ExecutionContext) extends SpecBase {
 
     "format the deadline as dd/MM/yyyy" in {
       val thread = Thread(
-        threadReference = "THREAD003",
+        threadReference = ThreadReference("THREAD003"),
         relatedReference = Some("CASE003"),
         externalContact = "Alex Brown",
         status = "Open",
@@ -108,7 +111,7 @@ class DashboardServiceSpec()(using ExecutionContext) extends SpecBase {
 
     "set priority to Overdue when the deadline is before today" in {
       val thread = Thread(
-        threadReference = "THREAD004",
+        threadReference = ThreadReference("THREAD004"),
         relatedReference = Some("CASE004"),
         externalContact = "Alex Brown",
         status = "Open",
@@ -121,7 +124,7 @@ class DashboardServiceSpec()(using ExecutionContext) extends SpecBase {
 
     "set priority to ResponseReceived when the status is Needs action" in {
       val thread = Thread(
-        threadReference = "THREAD005",
+        threadReference = ThreadReference("THREAD005"),
         relatedReference = Some("CASE005"),
         externalContact = "Alex Brown",
         status = "Needs action",
@@ -135,7 +138,7 @@ class DashboardServiceSpec()(using ExecutionContext) extends SpecBase {
 
     "prioritise an overdue thread as Overdue even when its status is Needs action" in {
       val thread = Thread(
-        threadReference = "THREAD006",
+        threadReference = ThreadReference("THREAD006"),
         relatedReference = Some("CASE006"),
         externalContact = "Alex Brown",
         status = "Needs action",
@@ -148,7 +151,7 @@ class DashboardServiceSpec()(using ExecutionContext) extends SpecBase {
 
     "set priority to None when the deadline is today" in {
       val thread = Thread(
-        threadReference = "THREAD007",
+        threadReference = ThreadReference("THREAD007"),
         relatedReference = Some("CASE007"),
         externalContact = "Alex Brown",
         status = "Open",
@@ -161,7 +164,7 @@ class DashboardServiceSpec()(using ExecutionContext) extends SpecBase {
   }
 
   private def dashboardThreadsFor(threads: Seq[Thread]): Seq[DashboardThread] = {
-    when(mockThreadSummaryConnector.getAll()(using any[HeaderCarrier]))
+    when(mockThreadConnector.getAll()(using any[HeaderCarrier]))
       .thenReturn(Future.successful(threads))
 
     service.getDashboardThreads().futureValue

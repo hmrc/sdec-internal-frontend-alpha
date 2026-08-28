@@ -56,7 +56,7 @@ class DashboardControllerSpec extends SpecBase {
 
       val exception = new RuntimeException("Unable to load threads")
 
-      when(mockThreadSummaryConnector.getAll()(using any[HeaderCarrier]))
+      when(mockThreadConnector.getAll()(using any[HeaderCarrier]))
         .thenReturn(Future.failed(exception))
 
       running(application) {

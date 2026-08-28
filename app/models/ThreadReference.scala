@@ -21,7 +21,7 @@ import play.api.mvc.PathBindable
 
 import scala.util.matching.Regex
 
-final case class ThreadReference private (value: String)
+final case class ThreadReference(value: String)
 
 object ThreadReference {
   private val ThreadReferenceRegex: Regex = """^[A-Z0-9]{12}$""".r
@@ -44,10 +44,12 @@ object ThreadReference {
   given format: OFormat[ThreadReference] = OFormat(
     Reads[ThreadReference] { json =>
       (json \ "value").validate[String].flatMap { value =>
-        ThreadReference.from(value).fold(
-          error => JsError(s"Invalid thread reference: $error"),
-          reference => JsSuccess(reference)
-        )
+        ThreadReference
+          .from(value)
+          .fold(
+            error => JsError(s"Invalid thread reference: $error"),
+            reference => JsSuccess(reference)
+          )
       }
     },
     OWrites[ThreadReference] { reference =>

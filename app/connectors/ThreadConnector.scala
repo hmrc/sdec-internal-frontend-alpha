@@ -17,7 +17,7 @@
 package connectors
 
 import config.FrontendAppConfig
-import models.Thread
+import models.{Thread, ThreadReference}
 import uk.gov.hmrc.http.HttpReads.Implicits.readFromJson
 import uk.gov.hmrc.http.client.HttpClientV2
 import uk.gov.hmrc.http.{HeaderCarrier, StringContextOps}
@@ -26,7 +26,7 @@ import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class ThreadSummaryConnector @Inject() (
+class ThreadConnector @Inject() (
   httpClient: HttpClientV2,
   appConfig:  FrontendAppConfig
 )(using ec: ExecutionContext) {
@@ -35,4 +35,10 @@ class ThreadSummaryConnector @Inject() (
     httpClient
       .get(url"${appConfig.threadSummariesUrl}")
       .execute[Seq[Thread]]
+
+  def get(threadReference: ThreadReference)(using hc: HeaderCarrier): Future[Option[Thread]] =
+    httpClient
+      .get(url"${appConfig.threadUrl(threadReference)}")
+      .execute[Option[Thread]]
+
 }

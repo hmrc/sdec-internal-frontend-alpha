@@ -135,4 +135,13 @@ checkYourAnswers.threadDetails.heading = Thread details
 checkYourAnswers.threadDetails.message = Message
 checkYourAnswers.threadDetails.responseDate = Response date
 
+label.thread_details = Thread details
+label.thread_reference = Thread reference
 
+thread.details.title = Thread details
+thread.details.reference = Thread reference
+thread.details.relatedReference = Related reference
+thread.details.externalContact = External contact
+thread.details.status = Status
+thread.details.waitingOn = Waiting on
+thread.details.deadline = Deadline

@@ -14,21 +14,10 @@
  * limitations under the License.
  */
 
-package viewmodels
+package models
 
-import models.ThreadReference
-
-enum ThreadPriority:
-  case Overdue
-  case ResponseReceived
-  case None
-
-final case class DashboardThread(
-  threadReference:  ThreadReference,
-  relatedReference: String,
-  externalContact:  String,
-  status:           String,
-  waitingOn:        String,
-  deadline:         String,
-  priority:         ThreadPriority
-)
+enum ThreadReferenceError {
+  case Empty
+  case InvalidLength
+  case InvalidFormat(value: String)
+}

@@ -16,7 +16,7 @@
 
 package services
 
-import connectors.ThreadSummaryConnector
+import connectors.ThreadConnector
 import models.Thread
 import uk.gov.hmrc.http.HeaderCarrier
 import viewmodels.{DashboardThread, ThreadPriority}
@@ -28,7 +28,7 @@ import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
 class DashboardService @Inject() (
-  threadSummaryConnector: ThreadSummaryConnector,
+  threadSummaryConnector: ThreadConnector,
   clock:                  Clock
 )(using ExecutionContext):
 

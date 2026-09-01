@@ -17,12 +17,9 @@
 package service
 
 import base.SpecBase
-import models.Thread
+import models.{Thread, ThreadReference}
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.when
-import models.{Thread, ThreadReference}
-import org.scalatest.matchers.should.Matchers
-import org.scalatest.wordspec.AnyWordSpec
 import services.DashboardService
 import uk.gov.hmrc.http.HeaderCarrier
 import viewmodels.{DashboardThread, ThreadPriority}

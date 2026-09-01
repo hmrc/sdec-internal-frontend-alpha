@@ -15,8 +15,6 @@
  */
 
 package controllers
-
-import connectors.ThreadConnector
 import controllers.actions.IdentifierAction
 import play.api.Logging
 import play.api.i18n.I18nSupport

@@ -21,6 +21,7 @@ import forms.ThreadDetailsFormProvider
 import models.{NormalMode, ThreadDetails, UserAnswers}
 import navigation.Navigator
 import pages.{RecipientDetailsPage, ThreadDetailsPage}
+import play.api.Logging
 import play.api.data.Form
 import play.api.i18n.{I18nSupport, Messages, MessagesApi}
 import play.api.mvc.*
@@ -30,6 +31,7 @@ import views.html.createthread.ThreadDetailsView
 
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
+import scala.util.control.NonFatal
 
 class ThreadDetailsController @Inject() (
   override val messagesApi: MessagesApi,
@@ -42,7 +44,8 @@ class ThreadDetailsController @Inject() (
   view:                     ThreadDetailsView
 )(using ExecutionContext)
     extends FrontendBaseController
-    with I18nSupport {
+    with I18nSupport
+    with Logging {
 
   private def form(implicit request: RequestHeader): Form[ThreadDetails] = {
     given Messages = messagesApi.preferred(request)
@@ -88,13 +91,14 @@ class ThreadDetailsController @Inject() (
           .fold(
             (formWithErrors: Form[ThreadDetails]) => Future.successful(BadRequest(view(formWithErrors, recipient))),
             value =>
-              for {
+              (for {
                 updatedAnswers <- Future
                                     .fromTry(userAnswers.set(ThreadDetailsPage, value))
                 _ <- sessionRepository.set(updatedAnswers)
-              } yield Redirect(
-                navigator.nextPage(ThreadDetailsPage, NormalMode, updatedAnswers)
-              )
+              } yield Redirect(navigator.nextPage(ThreadDetailsPage, NormalMode, updatedAnswers))).recover { case NonFatal(exception) =>
+                logger.error("Failed to save the thread details", exception)
+                Redirect(controllers.routes.JourneyRecoveryController.onPageLoad())
+              }
           )
     }
   }

@@ -16,21 +16,27 @@
 
 package services
 
+import connectors.ThreadSummaryConnector
 import models.Thread
+import uk.gov.hmrc.http.HeaderCarrier
 import viewmodels.{DashboardThread, ThreadPriority}
 
 import java.time.format.DateTimeFormatter
 import java.time.{Clock, LocalDate}
 import javax.inject.{Inject, Singleton}
+import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class DashboardService @Inject() (clock: Clock):
+class DashboardService @Inject() (
+  threadSummaryConnector: ThreadSummaryConnector,
+  clock:                  Clock
+)(using ExecutionContext):
 
   private val dateFormatter: DateTimeFormatter =
     DateTimeFormatter.ofPattern("dd/MM/yyyy")
 
-  def buildThreads(threads: Seq[Thread]): Seq[DashboardThread] =
-    threads.map(toDashboardThread)
+  def getDashboardThreads()(using HeaderCarrier): Future[Seq[DashboardThread]] =
+    threadSummaryConnector.getAll().map(_.map(toDashboardThread))
 
   private def toDashboardThread(thread: Thread): DashboardThread =
     DashboardThread(

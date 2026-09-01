@@ -17,10 +17,13 @@
 package controllers.createthread
 
 import controllers.actions.{DataRetrievalAction, IdentifierAction}
+import controllers.routes
 import forms.RecipientDetailsFormProvider
+import models.requests.OptionalDataRequest
 import models.{NormalMode, RecipientDetails, UserAnswers}
 import navigation.Navigator
 import pages.RecipientDetailsPage
+import play.api.Logging
 import play.api.data.Form
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.*
@@ -30,6 +33,7 @@ import views.html.createthread.RecipientDetailsView
 
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
+import scala.util.control.NonFatal
 
 class RecipientDetailsController @Inject() (
   override val messagesApi: MessagesApi,
@@ -42,16 +46,15 @@ class RecipientDetailsController @Inject() (
   view:                     RecipientDetailsView
 )(using ExecutionContext)
     extends FrontendBaseController
-    with I18nSupport {
+    with I18nSupport
+    with Logging {
 
   private val form: Form[RecipientDetails] = formProvider()
 
   def onPageLoad(): Action[AnyContent] = (identify andThen getData) { request =>
     given Request[AnyContent] = request
 
-    val userAnswers = request.userAnswers.getOrElse(UserAnswers(request.userId))
-
-    val preparedForm = userAnswers.get(RecipientDetailsPage) match {
+    val preparedForm = userAnswersFor(request).get(RecipientDetailsPage) match {
       case None        => form
       case Some(value) => form.fill(value)
     }
@@ -65,23 +68,20 @@ class RecipientDetailsController @Inject() (
     form
       .bindFromRequest()
       .fold(
-        (formWithErrors: Form[RecipientDetails]) =>
-          Future
-            .successful(BadRequest(view(remapCaseReferenceError(formWithErrors)))),
-        value => {
-          val userAnswers =
-            request.userAnswers.getOrElse(UserAnswers(request.userId))
-
-          for {
-            updatedAnswers <- Future
-                                .fromTry(userAnswers.set(RecipientDetailsPage, value))
-            _ <- sessionRepository.set(updatedAnswers)
-          } yield Redirect(
-            navigator.nextPage(RecipientDetailsPage, NormalMode, updatedAnswers)
-          )
-        }
+        (formWithErrors: Form[RecipientDetails]) => Future.successful(BadRequest(view(remapCaseReferenceError(formWithErrors)))),
+        value =>
+          (for {
+            updatedAnswers <- Future.fromTry(userAnswersFor(request).set(RecipientDetailsPage, value))
+            _              <- sessionRepository.set(updatedAnswers)
+          } yield Redirect(navigator.nextPage(RecipientDetailsPage, NormalMode, updatedAnswers))).recover { case NonFatal(exception) =>
+            logger.error("Failed to save the recipient details", exception)
+            Redirect(routes.JourneyRecoveryController.onPageLoad())
+          }
       )
   }
+
+  private def userAnswersFor(request: OptionalDataRequest[AnyContent]): UserAnswers =
+    request.userAnswers.getOrElse(UserAnswers(request.userId))
 
   private def remapCaseReferenceError(form: Form[RecipientDetails]): Form[RecipientDetails] =
     form.copy(errors = form.errors.map { e =>

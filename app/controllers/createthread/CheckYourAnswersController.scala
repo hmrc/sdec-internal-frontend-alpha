@@ -17,6 +17,7 @@
 package controllers.createthread
 
 import com.google.inject.Inject
+import connectors.ThreadCreateConnector
 import controllers.actions.{DataRequiredAction, DataRetrievalAction, IdentifierAction}
 import pages.{RecipientDetailsPage, ThreadDetailsPage}
 import play.api.i18n.{I18nSupport, MessagesApi}
@@ -24,6 +25,10 @@ import play.api.mvc.*
 import services.createthread.CheckYourAnswersService
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import views.html.createthread.CheckYourAnswersView
+import models.requests.CreateThreadRequest
+import models.response.CreateThreadResponse
+
+import scala.concurrent.{ExecutionContext, Future}
 
 class CheckYourAnswersController @Inject() (
   override val messagesApi: MessagesApi,
@@ -32,8 +37,10 @@ class CheckYourAnswersController @Inject() (
   requireData:              DataRequiredAction,
   checkYourAnswersService:  CheckYourAnswersService,
   val controllerComponents: MessagesControllerComponents,
-  view:                     CheckYourAnswersView
-) extends FrontendBaseController
+  view:                     CheckYourAnswersView,
+  threadCreateConnector:    ThreadCreateConnector
+)(implicit ec: ExecutionContext)
+    extends FrontendBaseController
     with I18nSupport {
 
   def onPageLoad(): Action[AnyContent] = (identify andThen getData andThen requireData) { request =>
@@ -52,14 +59,37 @@ class CheckYourAnswersController @Inject() (
     }
   }
 
-  def onSubmit(): Action[AnyContent] = (identify andThen getData andThen requireData) { request =>
-    given Request[AnyContent] = request
+  def onSubmit(): Action[AnyContent] =
+    (identify andThen getData andThen requireData).async { request =>
+      given Request[AnyContent] = request
 
-    (request.userAnswers.get(RecipientDetailsPage), request.userAnswers.get(ThreadDetailsPage)) match {
-      case (Some(_), Some(_)) =>
-        Redirect(controllers.routes.DevelopmentInProgressController.onPageLoad())
-      case _ =>
-        Redirect(controllers.routes.JourneyRecoveryController.onPageLoad())
+      (
+        request.userAnswers.get(RecipientDetailsPage),
+        request.userAnswers.get(ThreadDetailsPage)
+      ) match {
+
+        case (Some(recipient), Some(threadDetails)) =>
+
+          val createThreadRequest =
+            CreateThreadRequest(
+              recipientDetails = recipient,
+              threadDetails = threadDetails
+            )
+
+          threadCreateConnector
+            .createThread(createThreadRequest)
+            .map { response =>
+              Redirect(
+                controllers.createthread.routes.ThreadViewController.onPageLoad(response.threadReference)
+              )
+            }
+
+        case _ =>
+          Future.successful(
+            Redirect(
+              controllers.routes.JourneyRecoveryController.onPageLoad()
+            )
+          )
+      }
     }
-  }
 }

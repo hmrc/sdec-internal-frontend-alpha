@@ -28,3 +28,5 @@ POST        /create-thread/thread-details                controllers.createthrea
 
 GET         /create-thread/check-your-answers            controllers.createthread.CheckYourAnswersController.onPageLoad()
 POST        /create-thread/check-your-answers            controllers.createthread.CheckYourAnswersController.onSubmit()
+
+GET         /create-thread/thread-view/:threadReference  controllers.createthread.ThreadViewController.onPageLoad(threadReference: String)

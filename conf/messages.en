@@ -106,12 +106,13 @@ threadDetails.error.message.length = Message must be 1,000 characters or less. Y
 
 threadDetails.responseDate.legend = When do you need a reply?
 threadDetails.responseDate.hint = Enter a deadline for a response from your recipient. Use a realistic deadline which gives them time to respond.
-threadDetails.responseDate.error.requiredWhenYes = Enter the date you need a response by
 
 threadDetails.responseDate.error.all.required = Enter the day, month and year
 threadDetails.responseDate.error.two.required = Enter the missing parts of the date
 threadDetails.responseDate.error.required = Enter the missing part of the date
-
+threadDetails.responseDate.error.day.required = Enter the day part of the date
+threadDetails.responseDate.error.month.required = Enter the month part of the date
+threadDetails.responseDate.error.year.required = Enter the year part of the date
 threadDetails.responseDate.error.invalid = Enter a valid response date
 threadDetails.responseDate.error.year.length = Enter the year using 4 digits
 threadDetails.responseDate.error.future = The response date must be in the future

@@ -37,8 +37,6 @@ class ThreadConnector @Inject() (
       .execute[Seq[Thread]]
 
   def get(threadReference: ThreadReference)(using hc: HeaderCarrier): Future[Option[Thread]] =
-    httpClient
-      .get(url"${appConfig.threadUrl(threadReference)}")
-      .execute[Option[Thread]]
+    getAll().map(_.find(_.threadReference == threadReference))
 
 }

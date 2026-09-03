@@ -21,7 +21,7 @@ import play.api.libs.json.{Json, OFormat}
 
 import java.time.{LocalDate, LocalDateTime}
 
-final case class ThreadReference(
+final case class ThreadReferenceDetail(
   threadReference:         String,
   status:                  String,
   createdTimeStamp:        LocalDateTime,
@@ -32,7 +32,7 @@ final case class ThreadReference(
   threadDetails:           ThreadDetails
 )
 
-object ThreadReference {
-  implicit val format: OFormat[ThreadReference] =
-    Json.format[ThreadReference]
+object ThreadReferenceDetail {
+  implicit val format: OFormat[ThreadReferenceDetail] =
+    Json.format[ThreadReferenceDetail]
 }

@@ -14,7 +14,7 @@
  * limitations under the License.
  *@
 
-@import models.ThreadReference
+@import models.ThreadReferenceDetail
 @import java.time.format.DateTimeFormatter
 @import uk.gov.hmrc.govukfrontend.views.html.components._
 
@@ -23,7 +23,7 @@
  govukInsetText: GovukInsetText
 )
 
-@(thread: ThreadReference)(implicit request: Request[_], messages: Messages)
+@(thread: ThreadReferenceDetail)(implicit request: Request[_], messages: Messages)
 
 @createdDate = @{
  thread.createdTimeStamp.format(

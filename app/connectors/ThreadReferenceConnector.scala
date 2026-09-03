@@ -17,7 +17,7 @@
 package connectors
 
 import config.FrontendAppConfig
-import models.ThreadReference
+import models.ThreadReferenceDetail
 import uk.gov.hmrc.http.HttpReads.Implicits.readFromJson
 import uk.gov.hmrc.http.client.HttpClientV2
 import uk.gov.hmrc.http.{HeaderCarrier, StringContextOps}
@@ -31,8 +31,8 @@ class ThreadReferenceConnector @Inject() (
   appConfig:  FrontendAppConfig
 )(using ec: ExecutionContext) {
 
-  def getThreadReference(threadReference: String)(using hc: HeaderCarrier): Future[ThreadReference] =
+  def getThreadReference(threadReference: String)(using hc: HeaderCarrier): Future[ThreadReferenceDetail] =
     httpClient
       .get(url"${appConfig.threadReferenceUrl}/$threadReference")
-      .execute[ThreadReference]
+      .execute[ThreadReferenceDetail]
 }

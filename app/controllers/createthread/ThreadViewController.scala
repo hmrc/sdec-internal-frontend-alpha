@@ -22,7 +22,7 @@ import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.*
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import views.html.createthread.ThreadView
-
+import models.RecipientDetails
 import javax.inject.Inject
 import scala.concurrent.ExecutionContext
 
@@ -46,9 +46,8 @@ class ThreadViewController @Inject() (
         .getThreadReference(threadReference)
         .map { thread =>
           Ok(
-            s"${thread.recipientDetails.firstName} ${thread.recipientDetails.lastName}"
+            view(thread)
           )
-
         }
     }
 }

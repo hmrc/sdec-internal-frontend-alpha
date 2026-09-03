@@ -14,29 +14,130 @@
  * limitations under the License.
  *@
 
-@import models.RecipientDetails
-@import models.ThreadDetails
+@import models.ThreadReference
+@import java.time.format.DateTimeFormatter
 
-@this()
+@this(
+layout: templates.Layout,
+govukInsetText: GovukInsetText
+)
 
-@(recipient: RecipientDetails, threadDetails: ThreadDetails)
+@(thread: ThreadReference)(implicit request: Request[_], messages: Messages)
 
-<h1 class="govuk-heading-l">
- @recipient.firstName @recipient.lastName
-</h1>
+@createdDate = @{
+thread.createdTimeStamp.format(
+DateTimeFormatter.ofPattern("d MMMM yyyy")
+)
+}
 
-<h2 class="govuk-heading-m">
- Message
-</h2>
+@responseRequiredDate = @{
+thread.threadDetails.responseDate.format(
+DateTimeFormatter.ofPattern("d MMMM yyyy")
+)
+}
 
-<p class="govuk-body">
- @threadDetails.message
-</p>
+@layout(pageTitle = titleNoForm("Thread View")) {
 
-<h2 class="govuk-heading-m">
- Response required by
-</h2>
+<style>
 
-<p class="govuk-body">
- @threadDetails.responseDate
-</p>
+ .sdec-thread-timeline {
+  margin-top: 30px;
+ }
+
+ .sdec-thread-timeline__item {
+  position: relative;
+  border-left: 5px solid #1d70b8;
+  padding-left: 20px;
+  margin-bottom: 30px;
+ }
+
+ .sdec-thread-response-banner {
+  background-color: #dbe7f3;
+  padding: 15px;
+  margin-bottom: 20px;
+ }
+
+ .sdec-thread-date {
+  color: #505a5f;
+ }
+
+</style>
+
+<div class="govuk-grid-row">
+
+ <div class="govuk-grid-column-two-thirds">
+
+            <span class="govuk-caption-l">
+                Thread reference number: @thread.threadReference
+            </span>
+
+  <h1 class="govuk-heading-l">
+   @thread.recipientDetails.firstName
+   @thread.recipientDetails.lastName
+  </h1>
+
+  <div class="sdec-thread-timeline">
+
+   <div class="sdec-thread-timeline__item">
+
+    <h2 class="govuk-heading-m govuk-!-margin-bottom-1">
+     Response requested by HMRC
+    </h2>
+
+    <p class="govuk-body-s sdec-thread-date">
+     @createdDate
+    </p>
+
+    <div class="sdec-thread-response-banner">
+
+     <p class="govuk-body govuk-!-margin-bottom-0">
+      <strong>
+       Response required by @responseRequiredDate
+      </strong>
+     </p>
+
+    </div>
+
+    <p class="govuk-body">
+     @thread.threadDetails.message
+    </p>
+
+   </div>
+
+  </div>
+
+ </div>
+
+ <div class="govuk-grid-column-one-third">
+
+  <hr class="govuk-section-break govuk-section-break--visible govuk-!-margin-bottom-6">
+
+  <h2 class="govuk-heading-s">
+   Status
+  </h2>
+
+  <p class="govuk-body">
+   @thread.status
+  </p>
+
+  <h2 class="govuk-heading-s govuk-!-margin-top-6">
+   Related reference
+  </h2>
+
+  <p class="govuk-body">
+   @thread.associatedCaseReference
+  </p>
+
+  <h2 class="govuk-heading-s govuk-!-margin-top-6">
+   Created
+  </h2>
+
+  <p class="govuk-body">
+   @createdDate
+  </p>
+
+ </div>
+
+</div>
+
+}

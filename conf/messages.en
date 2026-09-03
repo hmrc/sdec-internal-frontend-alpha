@@ -135,4 +135,12 @@ checkYourAnswers.threadDetails.heading = Thread details
 checkYourAnswers.threadDetails.message = Message
 checkYourAnswers.threadDetails.responseDate = Response date
 
-
+threadView.title=Thread view
+threadView.caption=Thread reference number: {0}
+threadView.timeline.submitted=Response requested
+threadView.timeline.by=by HMRC
+threadView.responseRequired=Response required by {0}
+threadView.status.heading=Status
+threadView.relatedReference.heading=Related reference
+threadView.created.heading=Created
+threadView.notProvided=Not provided

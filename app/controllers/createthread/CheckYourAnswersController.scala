@@ -19,14 +19,13 @@ package controllers.createthread
 import com.google.inject.Inject
 import connectors.ThreadCreateConnector
 import controllers.actions.{DataRequiredAction, DataRetrievalAction, IdentifierAction}
+import models.requests.CreateThreadRequest
 import pages.{RecipientDetailsPage, ThreadDetailsPage}
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.*
 import services.createthread.CheckYourAnswersService
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import views.html.createthread.CheckYourAnswersView
-import models.requests.CreateThreadRequest
-import models.response.CreateThreadResponse
 
 import scala.concurrent.{ExecutionContext, Future}
 

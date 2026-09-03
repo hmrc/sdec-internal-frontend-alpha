@@ -63,8 +63,8 @@
             Seq(
                 TableRow(content = HtmlContent(
                     threadLink(
-                        text = thread.threadReference,
-                        call = Call("GET", controllers.routes.DevelopmentInProgressController.onPageLoad().url),
+                        text = thread.threadReference.toString,
+                        call = Call("GET", controllers.routes.ThreadController.onPageLoad(thread.threadReference).url),
                         classes = Some("govuk-link govuk-link--no-visited-state")
                     )
                 )),

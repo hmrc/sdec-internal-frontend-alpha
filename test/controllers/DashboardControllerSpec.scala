@@ -17,7 +17,7 @@
 package controllers
 
 import base.SpecBase
-import connectors.ThreadSummaryConnector
+import connectors.ThreadConnector
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.when
 import play.api.inject.bind
@@ -31,7 +31,7 @@ class DashboardControllerSpec extends SpecBase {
 
   private def baseApplication = applicationBuilder(userAnswers = None)
     .overrides(
-      bind[ThreadSummaryConnector].toInstance(mockThreadSummaryConnector)
+      bind[ThreadConnector].toInstance(mockThreadConnector)
     )
 
   "Dashboard Controller" - {
@@ -40,7 +40,7 @@ class DashboardControllerSpec extends SpecBase {
 
       val application = baseApplication.build()
 
-      when(mockThreadSummaryConnector.getAll()(using any[HeaderCarrier]))
+      when(mockThreadConnector.getAll()(using any[HeaderCarrier]))
         .thenReturn(Future.successful(Seq.empty))
 
       running(application) {
@@ -56,7 +56,7 @@ class DashboardControllerSpec extends SpecBase {
 
       val exception = new RuntimeException("Unable to load threads")
 
-      when(mockThreadSummaryConnector.getAll()(using any[HeaderCarrier]))
+      when(mockThreadConnector.getAll()(using any[HeaderCarrier]))
         .thenReturn(Future.failed(exception))
 
       running(application) {

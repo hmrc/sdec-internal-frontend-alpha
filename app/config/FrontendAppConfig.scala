@@ -52,8 +52,7 @@ class FrontendAppConfig @Inject() (configuration: Configuration) {
   private val threadInfoApi =
     configuration.get[Service]("microservice.services.sdec-threadinfo-api-alpha")
 
-  val threadSummariesUrl: String =
-    s"${threadInfoApi.baseUrl}/sdec-threadinfo-api-alpha/threads"
+  val threadSummariesUrl: String = s"${threadInfoApi.baseUrl}/sdec-threadinfo-api-alpha/threads"
 
   val threadReferenceUrl: String =
     s"${threadInfoApi.baseUrl}/sdec-threadinfo-api-alpha/thread-reference"

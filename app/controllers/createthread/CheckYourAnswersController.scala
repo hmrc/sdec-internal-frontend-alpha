@@ -23,6 +23,7 @@ import models.requests.CreateThreadRequest
 import pages.{RecipientDetailsPage, ThreadDetailsPage}
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.*
+import repositories.SessionRepository
 import services.createthread.CheckYourAnswersService
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import views.html.createthread.CheckYourAnswersView
@@ -37,8 +38,9 @@ class CheckYourAnswersController @Inject() (
   checkYourAnswersService:  CheckYourAnswersService,
   val controllerComponents: MessagesControllerComponents,
   view:                     CheckYourAnswersView,
-  threadCreateConnector:    ThreadCreateConnector
-)(implicit ec: ExecutionContext)
+  threadCreateConnector:    ThreadCreateConnector,
+  sessionRepository:        SessionRepository
+)(using ExecutionContext)
     extends FrontendBaseController
     with I18nSupport {
 
@@ -77,10 +79,15 @@ class CheckYourAnswersController @Inject() (
 
           threadCreateConnector
             .createThread(createThreadRequest)
-            .map { response =>
-              Redirect(
-                controllers.createthread.routes.ThreadViewController.onPageLoad(response.threadReference)
-              )
+            .flatMap { response =>
+              sessionRepository
+                .clear(request.userAnswers.id)
+                .map { _ =>
+                  Redirect(
+                    controllers.createthread.routes.ThreadViewController
+                      .onPageLoad(response.threadReference)
+                  )
+                }
             }
 
         case _ =>

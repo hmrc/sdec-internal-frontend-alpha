@@ -17,7 +17,7 @@
 package controllers.createthread
 
 import connectors.ThreadReferenceConnector
-import controllers.actions.{DataRequiredAction, DataRetrievalAction, IdentifierAction}
+import controllers.actions.IdentifierAction
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.*
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
@@ -29,17 +29,15 @@ import scala.concurrent.ExecutionContext
 class ThreadViewController @Inject() (
   override val messagesApi: MessagesApi,
   identify:                 IdentifierAction,
-  getData:                  DataRetrievalAction,
-  requireData:              DataRequiredAction,
   val controllerComponents: MessagesControllerComponents,
   view:                     ThreadView,
   threadReferenceConnector: ThreadReferenceConnector
-)(implicit ec: ExecutionContext)
+)(using ExecutionContext)
     extends FrontendBaseController
     with I18nSupport {
 
   def onPageLoad(threadReference: String): Action[AnyContent] =
-    (identify andThen getData andThen requireData).async { request =>
+    identify.async { request =>
       given Request[AnyContent] = request
 
       threadReferenceConnector

@@ -26,6 +26,6 @@ final case class CreateThreadResponse(
 )
 
 object CreateThreadResponse {
-  implicit val format: OFormat[CreateThreadResponse] =
+  given format: OFormat[CreateThreadResponse] =
     Json.format[CreateThreadResponse]
 }

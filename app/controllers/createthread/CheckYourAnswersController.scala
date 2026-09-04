@@ -80,14 +80,14 @@ class CheckYourAnswersController @Inject() (
           threadCreateConnector
             .createThread(createThreadRequest)
             .flatMap { response =>
-              sessionRepository
-                .clear(request.userAnswers.id)
-                .map { _ =>
-                  Redirect(
-                    controllers.createthread.routes.ThreadViewController
-                      .onPageLoad(response.threadReference)
-                  )
-                }
+              for {
+                cleared <- Future.fromTry(
+                             request.userAnswers
+                               .remove(RecipientDetailsPage)
+                               .flatMap(_.remove(ThreadDetailsPage))
+                           )
+                _ <- sessionRepository.set(cleared)
+              } yield Redirect(controllers.createthread.routes.ThreadViewController.onPageLoad(response.threadReference))
             }
 
         case _ =>

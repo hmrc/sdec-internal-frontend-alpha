@@ -33,6 +33,6 @@ final case class ThreadReferenceDetail(
 )
 
 object ThreadReferenceDetail {
-  implicit val format: OFormat[ThreadReferenceDetail] =
+  given format: OFormat[ThreadReferenceDetail] =
     Json.format[ThreadReferenceDetail]
 }

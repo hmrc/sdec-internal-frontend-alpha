@@ -25,6 +25,6 @@ final case class CreateThreadRequest(
 )
 
 object CreateThreadRequest {
-  implicit val format: OFormat[CreateThreadRequest] =
+  given OFormat[CreateThreadRequest] =
     Json.format[CreateThreadRequest]
 }

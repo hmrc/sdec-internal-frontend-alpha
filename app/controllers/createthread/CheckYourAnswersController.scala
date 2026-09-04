@@ -88,6 +88,7 @@ class CheckYourAnswersController @Inject() (
                            )
                 _ <- sessionRepository.set(cleared)
               } yield Redirect(controllers.createthread.routes.ThreadViewController.onPageLoad(response.threadReference))
+                .flashing("confirmationBanner" -> "true")
             }
 
         case _ =>

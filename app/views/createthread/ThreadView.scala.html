@@ -19,140 +19,140 @@
 @import uk.gov.hmrc.govukfrontend.views.html.components._
 
 @this(
- layout: templates.Layout,
- govukInsetText: GovukInsetText
+        layout: templates.Layout,
+        govukInsetText: GovukInsetText,
+        govukPanel: GovukPanel
 )
 
 @(thread: ThreadReferenceDetail)(implicit request: Request[_], messages: Messages)
 
 @createdDate = @{
- thread.createdTimeStamp.format(
-  DateTimeFormatter.ofPattern("d MMMM yyyy 'at' H:mm")
- )
+    thread.createdTimeStamp.format(
+        DateTimeFormatter.ofPattern("d MMMM yyyy 'at' H:mm")
+    )
 }
 
 @sidebarCreatedDate = @{
-  thread.createdTimeStamp.format(
-  DateTimeFormatter.ofPattern("d MMMM yyyy")
- )
+    thread.createdTimeStamp.format(
+        DateTimeFormatter.ofPattern("d MMMM yyyy")
+    )
 }
 
 @responseRequiredDate = @{
- thread.threadDetails.responseDate.format(
-  DateTimeFormatter.ofPattern("d MMMM yyyy")
- )
+    thread.threadDetails.responseDate.format(
+        DateTimeFormatter.ofPattern("d MMMM yyyy")
+    )
 }
 
 @layout(
- pageTitle = titleNoForm(messages("threadView.title")),
- showBackLink = true
+    pageTitle = titleNoForm(messages("threadView.title")),
+    showBackLink = false
 ) {
 
-<style>
- .sdec-thread-response-banner {
-  background-color: #dbe7f3;
-  border-left: 5px solid #1d70b8;
-  padding: 15px;
-  margin-bottom: 20px;
- }
-</style>
+    <div class="govuk-grid-row">
 
-<div class="govuk-grid-row">
+        @if(request.flash.get("confirmationBanner").isDefined) {
+            <div class="govuk-grid-column-two-thirds govuk-!-margin-bottom-6">
+            @govukPanel(Panel(
+                title = Text(messages("threadView.confirmationBanner"))
+            ))
+            </div>
+        }
 
- <div class="govuk-grid-column-two-thirds">
+        <div class="govuk-grid-column-two-thirds">
 
-  <span class="govuk-caption-l">
-   @messages(
-    "threadView.caption",
-    thread.id
-   )
-  </span>
+            <span class="govuk-caption-l">
+            @messages(
+                "threadView.caption",
+                thread.id
+            )
+            </span>
 
-  <h1 class="govuk-heading-l">
-   @thread.recipientDetails.firstName
-   @thread.recipientDetails.lastName
-  </h1>
+            <h1 class="govuk-heading-l">
+                @thread.recipientDetails.firstName
+                @thread.recipientDetails.lastName
+            </h1>
 
-  <ol class="hmrc-timeline">
+            <ol class="hmrc-timeline">
 
-   <li class="hmrc-timeline__event">
+                <li class="hmrc-timeline__event">
 
-    <h2 class="hmrc-timeline__event-title">
-     @messages("threadView.timeline.submitted")
+                    <h2 class="hmrc-timeline__event-title">
+                        @messages("threadView.timeline.submitted")
 
-     <span class="govuk-!-font-size-19 govuk-!-font-weight-regular">
-      @messages("threadView.timeline.by")
-     </span>
+                        <span class="govuk-!-font-size-19 govuk-!-font-weight-regular">
+                        @messages("threadView.timeline.by")
+                        </span>
 
-    </h2>
+                    </h2>
 
-    <time class="hmrc-timeline__event-meta" datetime="@thread.createdTimeStamp.toString">
+                    <time class="hmrc-timeline__event-meta" datetime="@thread.createdTimeStamp.toString">
 
-     @createdDate
+                    @createdDate
 
-    </time>
+                    </time>
 
-    <div class="hmrc-timeline__event-content">
+                    <div class="hmrc-timeline__event-content">
 
-     <div class="sdec-thread-response-banner">
+                        <div class="sdec-thread-response-banner">
 
-      <p class="govuk-body govuk-!-margin-bottom-0">
-       <strong>
-        @messages(
-        "threadView.responseRequired",
-        responseRequiredDate
-        )
-       </strong>
-      </p>
+                            <p class="govuk-body govuk-!-margin-bottom-0">
+                                <strong>
+                                @messages(
+                                    "threadView.responseRequired",
+                                    responseRequiredDate
+                                )
+                                </strong>
+                            </p>
 
-     </div>
+                        </div>
 
-     <p class="govuk-body">
-      @thread.threadDetails.message
-     </p>
+                        <p class="govuk-body">
+                        @thread.threadDetails.message
+                        </p>
+
+                    </div>
+
+                </li>
+
+            </ol>
+
+        </div>
+
+        <div class="govuk-grid-column-one-third">
+
+            <hr class="govuk-section-break govuk-section-break--visible govuk-!-margin-bottom-6">
+
+            <h2 class="govuk-heading-s">
+            @messages("threadView.status.heading")
+            </h2>
+
+            <p class="govuk-body">
+            @thread.status
+            </p>
+
+            <h2 class="govuk-heading-s govuk-!-margin-top-6">
+            @messages("threadView.relatedReference.heading")
+            </h2>
+
+            <p class="govuk-body">
+            @if(thread.associatedCaseReference.nonEmpty) {
+                @thread.associatedCaseReference
+            } else {
+                @messages("threadView.notProvided")
+            }
+            </p>
+
+            <h2 class="govuk-heading-s govuk-!-margin-top-6">
+            @messages("threadView.created.heading")
+            </h2>
+
+            <p class="govuk-body">
+            @sidebarCreatedDate
+            </p>
+
+        </div>
 
     </div>
-
-   </li>
-
-  </ol>
-
- </div>
-
- <div class="govuk-grid-column-one-third">
-
-  <hr class="govuk-section-break govuk-section-break--visible govuk-!-margin-bottom-6">
-
-  <h2 class="govuk-heading-s">
-   @messages("threadView.status.heading")
-  </h2>
-
-  <p class="govuk-body">
-   @thread.status
-  </p>
-
-  <h2 class="govuk-heading-s govuk-!-margin-top-6">
-   @messages("threadView.relatedReference.heading")
-  </h2>
-
-  <p class="govuk-body">
-   @if(thread.associatedCaseReference.nonEmpty) {
-   @thread.associatedCaseReference
-   } else {
-   @messages("threadView.notProvided")
-   }
-  </p>
-
-  <h2 class="govuk-heading-s govuk-!-margin-top-6">
-   @messages("threadView.created.heading")
-  </h2>
-
-  <p class="govuk-body">
-   @sidebarCreatedDate
-  </p>
-
- </div>
-
-</div>
 
 }

@@ -128,7 +128,11 @@
   </h2>
 
   <p class="govuk-body">
-   @thread.status
+   @if(thread.status == "Active") {
+    @messages("threadView.responseRequested")
+   } else {
+    @messages("threadView.noResponse")
+   }
   </p>
 
   <h2 class="govuk-heading-s govuk-!-margin-top-6">
@@ -137,9 +141,9 @@
 
   <p class="govuk-body">
    @if(thread.associatedCaseReference.nonEmpty) {
-   @thread.associatedCaseReference
+    @thread.associatedCaseReference
    } else {
-   @messages("threadView.notProvided")
+    @messages("threadView.notProvided")
    }
   </p>
 

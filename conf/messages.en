@@ -145,6 +145,8 @@ threadView.status.heading = Status
 threadView.relatedReference.heading = Related reference
 threadView.created.heading = Created
 threadView.notProvided = Not provided
+threadView.responseRequested = Response Requested
+threadView.noResponse = No Response
 
 threadView.confirmationBanner = Request sent
 

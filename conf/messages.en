@@ -148,6 +148,8 @@ threadView.notProvided = Not provided
 threadView.responseRequested = Response Requested
 threadView.noResponse = No Response
 
+threadView.confirmationBanner = Request sent
+
 label.thread_details = Thread details
 label.thread_reference = Thread reference
 

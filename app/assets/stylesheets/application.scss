@@ -62,3 +62,10 @@ body:has(.sdec-dashboard-page) {
     }
   }
 }
+
+.sdec-thread-response-banner {
+  background-color: #dbe7f3;
+  border-left: 5px solid #1d70b8;
+  padding: govuk-spacing(3);
+  margin-bottom: govuk-spacing(4);
+}

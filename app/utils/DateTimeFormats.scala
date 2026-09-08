@@ -25,10 +25,13 @@ import java.util.Locale
 object DateTimeFormats {
 
   // 3 December 2011
-  private val dateTimeFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("d MMMM yyyy")
+  val dateTimeFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("d MMMM yyyy")
 
   // 3 12 2011
   val dateTimeHintFormat: DateTimeFormatter = DateTimeFormatter.ofPattern("d M yyyy")
+
+  // 3 December 2011 at 12:22
+  val dateAndTimeFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("d MMMM yyyy 'at' H:mm")
 
   private val localisedDateTimeFormatters = Map(
     "en" -> dateTimeFormatter,

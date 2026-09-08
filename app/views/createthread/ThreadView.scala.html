@@ -15,33 +15,23 @@
  *@
 
 @import models.ThreadReferenceDetail
-@import java.time.format.DateTimeFormatter
 @import uk.gov.hmrc.govukfrontend.views.html.components._
+@import utils.DateTimeFormats.*
 
-@this(
-        layout: templates.Layout,
-        govukInsetText: GovukInsetText,
-        govukPanel: GovukPanel
-)
+@this(layout: templates.Layout, govukInsetText: GovukInsetText, govukPanel: GovukPanel)
 
 @(thread: ThreadReferenceDetail)(implicit request: Request[_], messages: Messages)
 
 @createdDate = @{
-    thread.createdTimeStamp.format(
-        DateTimeFormatter.ofPattern("d MMMM yyyy 'at' H:mm")
-    )
+    thread.createdTimeStamp.format(dateAndTimeFormatter)
 }
 
 @sidebarCreatedDate = @{
-    thread.createdTimeStamp.format(
-        DateTimeFormatter.ofPattern("d MMMM yyyy")
-    )
+    thread.createdTimeStamp.format(dateTimeFormatter)
 }
 
 @responseRequiredDate = @{
-    thread.threadDetails.responseDate.format(
-        DateTimeFormatter.ofPattern("d MMMM yyyy")
-    )
+    thread.threadDetails.responseDate.format(dateTimeFormatter)
 }
 
 @layout(

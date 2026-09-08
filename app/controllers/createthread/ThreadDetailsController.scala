@@ -95,9 +95,10 @@ class ThreadDetailsController @Inject() (
                 updatedAnswers <- Future
                                     .fromTry(userAnswers.set(ThreadDetailsPage, value))
                 _ <- sessionRepository.set(updatedAnswers)
-              } yield Redirect(navigator.nextPage(ThreadDetailsPage, NormalMode, updatedAnswers))).recover { case NonFatal(exception) =>
-                logger.error("Failed to save the thread details", exception)
-                Redirect(controllers.routes.JourneyRecoveryController.onPageLoad())
+              } yield Redirect(navigator.nextPage(ThreadDetailsPage, NormalMode, updatedAnswers))).recover {
+                case NonFatal(exception) =>
+                  logger.error("Failed to save the thread details", exception)
+                  Redirect(controllers.routes.JourneyRecoveryController.onPageLoad())
               }
           )
     }

@@ -68,14 +68,16 @@ class RecipientDetailsController @Inject() (
     form
       .bindFromRequest()
       .fold(
-        (formWithErrors: Form[RecipientDetails]) => Future.successful(BadRequest(view(remapCaseReferenceError(formWithErrors)))),
+        (formWithErrors: Form[RecipientDetails]) =>
+          Future.successful(BadRequest(view(remapCaseReferenceError(formWithErrors)))),
         value =>
           (for {
             updatedAnswers <- Future.fromTry(userAnswersFor(request).set(RecipientDetailsPage, value))
             _              <- sessionRepository.set(updatedAnswers)
-          } yield Redirect(navigator.nextPage(RecipientDetailsPage, NormalMode, updatedAnswers))).recover { case NonFatal(exception) =>
-            logger.error("Failed to save the recipient details", exception)
-            Redirect(routes.JourneyRecoveryController.onPageLoad())
+          } yield Redirect(navigator.nextPage(RecipientDetailsPage, NormalMode, updatedAnswers))).recover {
+            case NonFatal(exception) =>
+              logger.error("Failed to save the recipient details", exception)
+              Redirect(routes.JourneyRecoveryController.onPageLoad())
           }
       )
   }

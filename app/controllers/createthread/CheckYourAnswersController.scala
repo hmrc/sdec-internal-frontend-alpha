@@ -120,7 +120,9 @@ class CheckYourAnswersController @Inject() (
                      .flatMap(_.remove(ThreadDetailsPage))
                  )
       _ <- sessionRepository.set(cleared)
-    } yield Redirect(controllers.createthread.routes.ThreadViewController.onPageLoad(response.threadReference))
+    } yield Redirect(
+                controllers.createthread.routes.ThreadViewController.onPageLoad(response.threadReference)
+              )
       .flashing("confirmationBanner" -> "true")
   }
 }

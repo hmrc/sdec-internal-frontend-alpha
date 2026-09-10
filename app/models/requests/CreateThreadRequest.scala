@@ -16,15 +16,17 @@
 
 package models.requests
 
-import models.{RecipientDetails, ThreadDetails}
+import models.*
 import play.api.libs.json.{Json, OFormat}
 
 final case class CreateThreadRequest(
+  threadCreator:    UserRef,
+  threadOwner:      Option[UserRef],
+  owningTeam:       Team,
   recipientDetails: RecipientDetails,
   threadDetails:    ThreadDetails
 )
 
 object CreateThreadRequest {
-  given OFormat[CreateThreadRequest] =
-    Json.format[CreateThreadRequest]
+  given format: OFormat[CreateThreadRequest] = Json.format[CreateThreadRequest]
 }

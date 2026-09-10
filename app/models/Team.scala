@@ -14,13 +14,19 @@
  * limitations under the License.
  */
 
-package models.requests
+package models
 
-import play.api.mvc.{Request, WrappedRequest}
+import play.api.libs.json.{Json, OFormat}
 
-case class IdentifierRequest[A](
-  request:  Request[A],
-  userId:   String,
-  userName: String,
-  teamId:   String
-) extends WrappedRequest[A](request)
+final case class Team(
+  id:        String,
+  name:      String,
+  taskBased: Boolean
+) {
+  def ownerFor(user: UserRef): Option[UserRef] =
+    Option.unless(taskBased)(user)
+}
+
+object Team {
+  given format: OFormat[Team] = Json.format[Team]
+}

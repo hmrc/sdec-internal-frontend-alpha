@@ -38,7 +38,7 @@ class DataRequiredActionImpl @Inject() (implicit
           Left(Redirect(routes.JourneyRecoveryController.onPageLoad()))
         )
       case Some(data) =>
-        Future.successful(Right(DataRequest(request.request, request.userId, data)))
+        Future.successful(Right(DataRequest(request.request, request.userId, request.userName, request.teamId, data)))
     }
 }
 

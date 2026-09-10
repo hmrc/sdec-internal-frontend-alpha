@@ -48,7 +48,7 @@ unauthorised.heading = You can’t access this service with this account
 developmentInProgress.title = Development in progress
 
 dashboard.title = SDEC Internal Dashboard
-dashboard.service.name = Share Files Securely with Child Benefit Service
+dashboard.service.name = Share Files Securely with {0} Service
 
 navigation.welcome = Welcome back: {0}
 navigation.workspace = Workspace
@@ -155,6 +155,10 @@ label.thread_reference = Thread reference
 
 thread.details.title = Thread details
 thread.details.reference = Thread reference
+thread.details.creator = Thread creator
+thread.details.owner = Thread owner
+thread.details.owner.unassigned = Not assigned
+thread.details.owningTeam = Owning team
 thread.details.relatedReference = Related reference
 thread.details.externalContact = External contact
 thread.details.status = Status

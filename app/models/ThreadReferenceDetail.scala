@@ -28,6 +28,9 @@ final case class ThreadReferenceDetail(
   lastUpdatedTimeStamp:    LocalDateTime,
   threadExpiryDate:        LocalDate,
   associatedCaseReference: String,
+  threadCreator:           UserRef,
+  threadOwner:             Option[UserRef],
+  owningTeam:              TeamRef,
   recipientDetails:        RecipientDetails,
   threadDetails:           ThreadDetails
 )

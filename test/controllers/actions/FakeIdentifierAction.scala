@@ -28,7 +28,7 @@ class FakeIdentifierAction @Inject() (bodyParsers: PlayBodyParsers) extends Iden
     request: Request[A],
     block:   IdentifierRequest[A] => Future[Result]
   ): Future[Result] =
-    block(IdentifierRequest(request, "id"))
+    block(IdentifierRequest(request, "id", "Test User", "TEAM-001"))
 
   override def parser: BodyParser[AnyContent] =
     bodyParsers.default

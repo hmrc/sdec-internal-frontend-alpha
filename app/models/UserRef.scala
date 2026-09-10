@@ -14,13 +14,15 @@
  * limitations under the License.
  */
 
-package models.requests
+package models
 
-import play.api.mvc.{Request, WrappedRequest}
+import play.api.libs.json.{Json, OFormat}
 
-case class IdentifierRequest[A](
-  request:  Request[A],
-  userId:   String,
-  userName: String,
-  teamId:   String
-) extends WrappedRequest[A](request)
+final case class UserRef(
+  id:   String,
+  name: String
+)
+
+object UserRef {
+  given format: OFormat[UserRef] = Json.format[UserRef]
+}

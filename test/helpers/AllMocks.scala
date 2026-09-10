@@ -16,7 +16,7 @@
 
 package helpers
 
-import connectors.ThreadConnector
+import connectors.{TeamsConnector, ThreadConnector}
 import org.mockito.Mockito
 import org.scalatest.BeforeAndAfterEach
 import org.scalatestplus.mockito.MockitoSugar
@@ -24,10 +24,12 @@ import org.scalatestplus.mockito.MockitoSugar
 trait AllMocks extends MockitoSugar { me: BeforeAndAfterEach =>
 
   val mockThreadConnector: ThreadConnector = mock[ThreadConnector]
+  val mockTeamsConnector:  TeamsConnector  = mock[TeamsConnector]
 
   override protected def beforeEach(): Unit =
     Seq(
-      mockThreadConnector
+      mockThreadConnector,
+      mockTeamsConnector
     ).foreach(Mockito.reset(_))
 
 }

@@ -20,6 +20,9 @@ import base.SpecBase
 import com.google.inject.Inject
 import config.FrontendAppConfig
 import controllers.routes
+import models.Team
+import org.mockito.ArgumentMatchers.any
+import org.mockito.Mockito.when
 import play.api.mvc.*
 import play.api.test.FakeRequest
 import play.api.test.Helpers.*
@@ -39,6 +42,9 @@ class AuthActionSpec extends SpecBase {
 
   "Auth Action" - {
 
+    when(mockTeamsConnector.getTeam(any())(using any[HeaderCarrier]))
+      .thenReturn(Future.successful(Some(Team("TEAM-001", "Child Benefits", taskBased = true))))
+
     "when the user hasn't logged in" - {
 
       "must redirect the user to log in " in {
@@ -52,6 +58,7 @@ class AuthActionSpec extends SpecBase {
           val authAction = new AuthenticatedIdentifierAction(
             new FakeFailingAuthConnector(new MissingBearerToken),
             appConfig,
+            mockTeamsConnector,
             bodyParsers
           )
           val controller = new Harness(authAction)
@@ -76,6 +83,7 @@ class AuthActionSpec extends SpecBase {
           val authAction = new AuthenticatedIdentifierAction(
             new FakeFailingAuthConnector(new BearerTokenExpired),
             appConfig,
+            mockTeamsConnector,
             bodyParsers
           )
           val controller = new Harness(authAction)
@@ -100,6 +108,7 @@ class AuthActionSpec extends SpecBase {
           val authAction = new AuthenticatedIdentifierAction(
             new FakeFailingAuthConnector(new InsufficientEnrolments),
             appConfig,
+            mockTeamsConnector,
             bodyParsers
           )
           val controller = new Harness(authAction)
@@ -126,6 +135,7 @@ class AuthActionSpec extends SpecBase {
           val authAction = new AuthenticatedIdentifierAction(
             new FakeFailingAuthConnector(new InsufficientConfidenceLevel),
             appConfig,
+            mockTeamsConnector,
             bodyParsers
           )
           val controller = new Harness(authAction)
@@ -152,6 +162,7 @@ class AuthActionSpec extends SpecBase {
           val authAction = new AuthenticatedIdentifierAction(
             new FakeFailingAuthConnector(new UnsupportedAuthProvider),
             appConfig,
+            mockTeamsConnector,
             bodyParsers
           )
           val controller = new Harness(authAction)
@@ -178,6 +189,7 @@ class AuthActionSpec extends SpecBase {
           val authAction = new AuthenticatedIdentifierAction(
             new FakeFailingAuthConnector(new UnsupportedAffinityGroup),
             appConfig,
+            mockTeamsConnector,
             bodyParsers
           )
           val controller = new Harness(authAction)
@@ -204,6 +216,7 @@ class AuthActionSpec extends SpecBase {
           val authAction = new AuthenticatedIdentifierAction(
             new FakeFailingAuthConnector(new UnsupportedCredentialRole),
             appConfig,
+            mockTeamsConnector,
             bodyParsers
           )
           val controller = new Harness(authAction)

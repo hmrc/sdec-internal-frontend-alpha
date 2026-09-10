@@ -21,6 +21,7 @@
 @import uk.gov.hmrc.govukfrontend.views.viewmodels.backlink.BackLink
 @import uk.gov.hmrc.hmrcfrontend.views.viewmodels.internalheader.InternalHeader
 @import views.html.helper.CSPNonce
+@import models.TeamRef
 
 @this(
     appConfig: FrontendAppConfig,
@@ -69,10 +70,17 @@
     }
 }
 
+@serviceName = @{
+    rh.session
+    .get("teamName")
+    .map(name => messages("dashboard.service.name", name))
+    .getOrElse("")
+}
+
 @header = {
     @hmrcInternalHeader(InternalHeader(
         homepageUrl = routes.DashboardController.onPageLoad().url,
-        serviceName = Some(messages("dashboard.service.name")),
+        serviceName = Some(serviceName),
         serviceUrl = routes.DashboardController.onPageLoad().url
     ))
 

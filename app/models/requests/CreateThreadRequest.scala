@@ -22,7 +22,7 @@ import play.api.libs.json.{Json, OFormat}
 final case class CreateThreadRequest(
   threadCreator:    UserRef,
   threadOwner:      Option[UserRef],
-  owningTeam:       Team,
+  owningTeam:       TeamRef,
   recipientDetails: RecipientDetails,
   threadDetails:    ThreadDetails
 )

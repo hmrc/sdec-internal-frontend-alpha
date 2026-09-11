@@ -28,7 +28,7 @@ import play.api.test.FakeRequest
 import play.api.test.Helpers.*
 import uk.gov.hmrc.auth.core.*
 import uk.gov.hmrc.auth.core.authorise.Predicate
-import uk.gov.hmrc.auth.core.retrieve.Retrieval
+import uk.gov.hmrc.auth.core.retrieve.{Credentials, Name, Retrieval, ~}
 import uk.gov.hmrc.http.HeaderCarrier
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -40,9 +40,18 @@ class AuthActionSpec extends SpecBase {
     def onPageLoad(): Action[AnyContent] = authAction(_ => Results.Ok)
   }
 
+  private def retrievals(enrolments: Set[Enrolment]) =
+    new ~(
+      new ~(
+        Some(Credentials("pid-001", "PrivilegedApplication")),
+        Some(Name(Some("Jane"), Some("Smith")))
+      ),
+      Enrolments(enrolments)
+    )
+
   "Auth Action" - {
 
-    when(mockTeamsConnector.getTeam(any())(using any[HeaderCarrier]))
+    when(mockTeamsConnector.getTeamByRole(any())(using any[HeaderCarrier]))
       .thenReturn(Future.successful(Some(Team("TEAM-001", "Child Benefits", taskBased = true))))
 
     "when the user hasn't logged in" - {
@@ -169,9 +178,7 @@ class AuthActionSpec extends SpecBase {
           val result     = controller.onPageLoad()(FakeRequest())
 
           status(result) mustBe SEE_OTHER
-          redirectLocation(result).value mustBe routes.UnauthorisedController
-            .onPageLoad()
-            .url
+          redirectLocation(result).value must startWith(appConfig.loginUrl)
         }
       }
     }
@@ -229,6 +236,59 @@ class AuthActionSpec extends SpecBase {
         }
       }
     }
+
+    "the user has no SDEC role" - {
+
+      "must redirect the user to the insufficient roles page" in {
+
+        val application = applicationBuilder(userAnswers = None).build()
+
+        running(application) {
+          val bodyParsers = application.injector.instanceOf[BodyParsers.Default]
+          val appConfig   = application.injector.instanceOf[FrontendAppConfig]
+
+          val authAction = new AuthenticatedIdentifierAction(
+            new FakeSuccessfulAuthConnector(retrievals(Set.empty)),
+            appConfig,
+            mockTeamsConnector,
+            bodyParsers
+          )
+          val controller = new Harness(authAction)
+          val result     = controller.onPageLoad()(FakeRequest())
+
+          status(result) mustBe SEE_OTHER
+          redirectLocation(result).value mustBe routes.InsufficientRolesController.onPageLoad().url
+        }
+      }
+    }
+
+    "the user's SDEC role does not map to a known team" - {
+
+      "must redirect the user to the insufficient roles page" in {
+
+        when(mockTeamsConnector.getTeamByRole(any())(using any[HeaderCarrier]))
+          .thenReturn(Future.successful(None))
+
+        val application = applicationBuilder(userAnswers = None).build()
+
+        running(application) {
+          val bodyParsers = application.injector.instanceOf[BodyParsers.Default]
+          val appConfig   = application.injector.instanceOf[FrontendAppConfig]
+
+          val authAction = new AuthenticatedIdentifierAction(
+            new FakeSuccessfulAuthConnector(retrievals(Set(Enrolment("sdec_nonsense")))),
+            appConfig,
+            mockTeamsConnector,
+            bodyParsers
+          )
+          val controller = new Harness(authAction)
+          val result     = controller.onPageLoad()(FakeRequest())
+
+          status(result) mustBe SEE_OTHER
+          redirectLocation(result).value mustBe routes.InsufficientRolesController.onPageLoad().url
+        }
+      }
+    }
   }
 }
 
@@ -240,4 +300,14 @@ class FakeFailingAuthConnector @Inject() (exceptionToReturn: Throwable) extends 
     ec: ExecutionContext
   ): Future[A] =
     Future.failed(exceptionToReturn)
+}
+
+class FakeSuccessfulAuthConnector[T] @Inject() (value: T) extends AuthConnector {
+  val serviceUrl: String = ""
+
+  override def authorise[A](predicate: Predicate, retrieval: Retrieval[A])(implicit
+    hc: HeaderCarrier,
+    ec: ExecutionContext
+  ): Future[A] =
+    Future.successful(value.asInstanceOf[A])
 }

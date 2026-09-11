@@ -40,4 +40,13 @@ class TeamsConnector @Inject() (
         if response.status == OK then response.json.asOpt[Team]
         else None
       }
+
+  def getTeamByRole(role: String)(using hc: HeaderCarrier): Future[Option[Team]] =
+    httpClient
+      .get(url"${appConfig.teamsByRoleUrl}/$role")
+      .execute[HttpResponse]
+      .map { response =>
+        if response.status == OK then response.json.asOpt[Team]
+        else None
+      }
 }

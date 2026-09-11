@@ -45,6 +45,10 @@ signedOut.guidance = We did not save your answers.
 unauthorised.title = You can’t access this service with this account
 unauthorised.heading = You can’t access this service with this account
 
+insufficientRoles.title = You do not have access to this service
+insufficientRoles.heading = You do not have access to this service
+insufficientRoles.guidance = Your account does not have an SDEC role. Contact your line manager or service administrator to request access.
+
 developmentInProgress.title = Development in progress
 
 dashboard.title = SDEC Internal Dashboard

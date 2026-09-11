@@ -27,9 +27,10 @@ import play.api.mvc.*
 import play.api.mvc.Results.*
 import play.api.mvc.request.{Cell, RequestAttrKey}
 import uk.gov.hmrc.auth.core.*
+import uk.gov.hmrc.auth.core.AuthProvider.PrivilegedApplication
 import uk.gov.hmrc.auth.core.retrieve.v2.Retrievals
 import uk.gov.hmrc.auth.core.retrieve.{Name, ~}
-import uk.gov.hmrc.http.{HeaderCarrier, UnauthorizedException}
+import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.http.HeaderCarrierConverter
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -50,11 +51,15 @@ class AuthenticatedIdentifierAction @Inject() (
 
   override val executionContext: ExecutionContext = ec
 
-  private val teamIdKey          = "teamId"
-  private val userNameKey        = "userName"
-  private val teamEnrolmentKey   = "HMRC-SDEC-TEAM"
-  private val teamIdentifierName = "TeamId"
-  private val teamNameKey        = "teamName"
+  private val teamIdKey   = "teamId"
+  private val teamNameKey = "teamName"
+  private val userNameKey = "userName"
+
+  private val strideParams: Map[String, Seq[String]] =
+    Map(
+      "successURL" -> Seq(config.loginContinueUrl),
+      "origin"     -> Seq(config.appName)
+    )
 
   override def invokeBlock[A](
     request: Request[A],
@@ -64,68 +69,82 @@ class AuthenticatedIdentifierAction @Inject() (
     given HeaderCarrier =
       HeaderCarrierConverter.fromRequestAndSession(request, request.session)
 
-    authorised().retrieve(Retrievals.internalId and Retrievals.name and Retrievals.allEnrolments) {
-      case Some(internalId) ~ name ~ enrolments =>
-        val userName = displayName(name, internalId)
+    authorised(AuthProviders(PrivilegedApplication))
+      .retrieve(Retrievals.credentials and Retrievals.name and Retrievals.allEnrolments) {
 
-        val cached =
-          for {
-            id   <- request.session.get(teamIdKey)
-            name <- request.session.get(teamNameKey)
-          } yield TeamRef(id, name)
+        case Some(credentials) ~ name ~ enrolments =>
+          val userId   = credentials.providerId
+          val userName = displayName(name, userId)
 
-        team(cached, enrolments, internalId).flatMap {
-          case Some(team) =>
-            block(IdentifierRequest(withSession(request, userName, team), internalId, userName, team.id))
-          case None =>
-            Future.successful(Redirect(routes.UnauthorisedController.onPageLoad()))
-        }
+          team(cachedTeam(request), enrolments, userId).flatMap {
+            case Some(team) =>
+              block(IdentifierRequest(withSession(request, userName, team), userId, userName, team.id))
+            case None =>
+              Future.successful(Redirect(routes.InsufficientRolesController.onPageLoad()))
+          }
 
-      case None ~ _ ~ _ =>
-        throw new UnauthorizedException("Unable to retrieve internal Id")
-    } recover {
-      case _: NoActiveSession =>
-        Redirect(config.loginUrl, Map("continue" -> Seq(config.loginContinueUrl)))
-      case _: AuthorisationException =>
-        Redirect(routes.UnauthorisedController.onPageLoad())
-    }
+        case None ~ _ ~ _ =>
+          logger.warn("No STRIDE credentials returned")
+          Future.successful(Redirect(routes.UnauthorisedController.onPageLoad()))
+      }
+      .recover {
+        case _: NoActiveSession =>
+          Redirect(config.loginUrl, strideParams)
+        case _: UnsupportedAuthProvider =>
+          logger.warn("Non-STRIDE session presented, redirecting to STRIDE sign in")
+          Redirect(config.loginUrl, strideParams)
+        case e: AuthorisationException =>
+          logger.warn(s"Authorisation failed: ${e.reason}")
+          Redirect(routes.UnauthorisedController.onPageLoad())
+      }
   }
 
-  private def displayName(name: Option[Name], internalId: String): String =
+  private def displayName(name: Option[Name], fallback: String): String =
     name
       .map(n => Seq(n.name, n.lastName).flatten.mkString(" "))
       .filter(_.nonEmpty)
-      .getOrElse(internalId)
+      .getOrElse(fallback)
+
+  private def cachedTeam[A](request: Request[A]): Option[TeamRef] =
+    for {
+      id   <- request.session.get(teamIdKey)
+      name <- request.session.get(teamNameKey)
+    } yield TeamRef(id, name)
 
   private def team(
     cached:     Option[TeamRef],
     enrolments: Enrolments,
-    internalId: String
+    userId:     String
   )(using HeaderCarrier): Future[Option[TeamRef]] =
     cached match {
       case Some(_) => Future.successful(cached)
-      case None    => validatedTeam(enrolments, internalId)
+      case None    => validatedTeam(enrolments, userId)
     }
 
   private def validatedTeam(
     enrolments: Enrolments,
-    internalId: String
+    userId:     String
   )(using HeaderCarrier): Future[Option[TeamRef]] =
-    enrolments
-      .getEnrolment(teamEnrolmentKey)
-      .flatMap(_.getIdentifier(teamIdentifierName))
-      .map(_.value) match {
+    sdecRole(enrolments) match {
 
       case None =>
-        logger.warn(s"No $teamEnrolmentKey enrolment found for user $internalId")
+        logger.warn(s"No ${config.strideRolePrefix}* role found for user $userId")
         Future.successful(None)
 
-      case Some(teamId) =>
-        teamsConnector.getTeam(teamId).map { team =>
-          if team.isEmpty then logger.warn(s"Team id $teamId from enrolment is not a known team")
+      case Some(role) =>
+        teamsConnector.getTeamByRole(role).map { team =>
+          if team.isEmpty then logger.warn(s"Stride role $role does not map to a known team")
           team.map(t => TeamRef(t.id, t.name))
         }
     }
+
+  private def sdecRole(enrolments: Enrolments): Option[String] =
+    enrolments.enrolments
+      .map(_.key)
+      .filter(_.toLowerCase.startsWith(config.strideRolePrefix.toLowerCase))
+      .toSeq
+      .sorted
+      .headOption
 
   private def withSession[A](request: Request[A], userName: String, team: TeamRef): Request[A] =
     request.addAttr(
@@ -137,33 +156,4 @@ class AuthenticatedIdentifierAction @Inject() (
           + (teamNameKey -> team.name)
       )
     )
-}
-
-class SessionIdentifierAction @Inject() (
-  val parser: BodyParsers.Default
-)(using ec: ExecutionContext)
-    extends IdentifierAction {
-
-  override val executionContext: ExecutionContext = ec
-
-  override def invokeBlock[A](
-    request: Request[A],
-    block:   IdentifierRequest[A] => Future[Result]
-  ): Future[Result] = {
-
-    val hc: HeaderCarrier =
-      HeaderCarrierConverter.fromRequestAndSession(request, request.session)
-
-    hc.sessionId match {
-      case Some(session) =>
-        val updatedRequest = request.addAttr(
-          RequestAttrKey.Session,
-          Cell(request.session + ("userName" -> session.value))
-        )
-
-        block(IdentifierRequest(updatedRequest, session.value, session.value, ""))
-      case None =>
-        Future.successful(Redirect(routes.JourneyRecoveryController.onPageLoad()))
-    }
-  }
 }

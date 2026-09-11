@@ -14,19 +14,22 @@
  * limitations under the License.
  */
 
-package models
+package controllers
 
-import play.api.libs.json.{Json, OFormat}
+import play.api.i18n.I18nSupport
+import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
+import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
+import views.html.InsufficientRolesView
 
-final case class Team(
-  id:        String,
-  name:      String,
-  taskBased: Boolean
-) {
-  def ownerFor(user: UserRef): Option[UserRef] =
-    Option.when(taskBased)(user)
-}
+import javax.inject.Inject
 
-object Team {
-  given format: OFormat[Team] = Json.format[Team]
+class InsufficientRolesController @Inject() (
+  val controllerComponents: MessagesControllerComponents,
+  view:                     InsufficientRolesView
+) extends FrontendBaseController
+    with I18nSupport {
+
+  def onPageLoad(): Action[AnyContent] = Action { implicit request =>
+    Ok(view())
+  }
 }

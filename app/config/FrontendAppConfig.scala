@@ -63,6 +63,10 @@ class FrontendAppConfig @Inject() (configuration: Configuration) {
   val teamsUrl: String =
     s"${threadInfoApi.baseUrl}/sdec-threadinfo-api-alpha/teams"
 
+  val strideRolePrefix: String = configuration.get[String]("stride.rolePrefix")
+
+  val teamsByRoleUrl: String = s"$teamsUrl/by-role"
+
   val timeout:   Int = configuration.get[Int]("timeout-dialog.timeout")
   val countdown: Int = configuration.get[Int]("timeout-dialog.countdown")
 

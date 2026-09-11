@@ -97,7 +97,7 @@ class CheckYourAnswersController @Inject() (
   private def createThread(
     threadCreator:    UserRef,
     threadOwner:      Option[UserRef],
-    owningTeam:       Team,
+    team:             Team,
     recipientDetails: RecipientDetails,
     threadDetails:    ThreadDetails,
     userAnswers:      UserAnswers
@@ -107,7 +107,7 @@ class CheckYourAnswersController @Inject() (
       CreateThreadRequest(
         threadCreator = threadCreator,
         threadOwner = threadOwner,
-        owningTeam = owningTeam,
+        owningTeam = TeamRef(team.id, team.name),
         recipientDetails = recipientDetails,
         threadDetails = threadDetails
       )

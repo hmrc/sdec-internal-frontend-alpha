@@ -19,9 +19,10 @@ package models
 import play.api.libs.json.{Json, OFormat}
 
 final case class Team(
-  id:        String,
-  name:      String,
-  taskBased: Boolean
+  id:         String,
+  name:       String,
+  taskBased:  Boolean,
+  strideRole: String
 ) {
   def ownerFor(user: UserRef): Option[UserRef] =
     Option.when(taskBased)(user)

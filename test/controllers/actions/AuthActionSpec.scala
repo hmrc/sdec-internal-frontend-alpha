@@ -52,7 +52,11 @@ class AuthActionSpec extends SpecBase {
   "Auth Action" - {
 
     when(mockTeamsConnector.getTeamByRole(any())(using any[HeaderCarrier]))
-      .thenReturn(Future.successful(Some(Team("TEAM-001", "Child Benefits", taskBased = true))))
+      .thenReturn(
+        Future.successful(
+          Some(Team("TEAM-001", "Child Benefits", taskBased = true, strideRole = "sdec_child_benefits"))
+        )
+      )
 
     "when the user hasn't logged in" - {
 

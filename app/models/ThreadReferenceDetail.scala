@@ -30,7 +30,7 @@ final case class ThreadReferenceDetail(
   associatedCaseReference: String,
   threadCreator:           UserRef,
   threadOwner:             Option[UserRef],
-  owningTeam:              TeamRef,
+  owningTeam:              Team,
   recipientDetails:        RecipientDetails,
   threadDetails:           ThreadDetails
 )

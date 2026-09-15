@@ -20,7 +20,6 @@ import com.google.inject.Inject
 import config.FrontendAppConfig
 import connectors.TeamsConnector
 import controllers.routes
-import models.TeamRef
 import models.requests.IdentifierRequest
 import play.api.Logging
 import play.api.mvc.*
@@ -77,8 +76,15 @@ class AuthenticatedIdentifierAction @Inject() (
           val userName = displayName(name, userId)
 
           team(cachedTeam(request), enrolments, userId).flatMap {
-            case Some(team) =>
-              block(IdentifierRequest(withSession(request, userName, team), userId, userName, team.id))
+            case Some((teamId, teamName)) =>
+              block(
+                IdentifierRequest(
+                  withSession(request, userName, teamId, teamName),
+                  userId,
+                  userName,
+                  teamId
+                )
+              )
             case None =>
               Future.successful(Redirect(routes.InsufficientRolesController.onPageLoad()))
           }
@@ -105,17 +111,17 @@ class AuthenticatedIdentifierAction @Inject() (
       .filter(_.nonEmpty)
       .getOrElse(fallback)
 
-  private def cachedTeam[A](request: Request[A]): Option[TeamRef] =
+  private def cachedTeam[A](request: Request[A]): Option[(String, String)] =
     for {
       id   <- request.session.get(teamIdKey)
       name <- request.session.get(teamNameKey)
-    } yield TeamRef(id, name)
+    } yield (id, name)
 
   private def team(
-    cached:     Option[TeamRef],
+    cached:     Option[(String, String)],
     enrolments: Enrolments,
     userId:     String
-  )(using HeaderCarrier): Future[Option[TeamRef]] =
+  )(using HeaderCarrier): Future[Option[(String, String)]] =
     cached match {
       case Some(_) => Future.successful(cached)
       case None    => validatedTeam(enrolments, userId)
@@ -124,7 +130,7 @@ class AuthenticatedIdentifierAction @Inject() (
   private def validatedTeam(
     enrolments: Enrolments,
     userId:     String
-  )(using HeaderCarrier): Future[Option[TeamRef]] =
+  )(using HeaderCarrier): Future[Option[(String, String)]] =
     sdecRole(enrolments) match {
 
       case None =>
@@ -134,7 +140,7 @@ class AuthenticatedIdentifierAction @Inject() (
       case Some(role) =>
         teamsConnector.getTeamByRole(role).map { team =>
           if team.isEmpty then logger.warn(s"Stride role $role does not map to a known team")
-          team.map(t => TeamRef(t.id, t.name))
+          team.map(t => (t.id, t.name))
         }
     }
 
@@ -146,14 +152,19 @@ class AuthenticatedIdentifierAction @Inject() (
       .sorted
       .headOption
 
-  private def withSession[A](request: Request[A], userName: String, team: TeamRef): Request[A] =
+  private def withSession[A](
+    request:  Request[A],
+    userName: String,
+    teamId:   String,
+    teamName: String
+  ): Request[A] =
     request.addAttr(
       RequestAttrKey.Session,
       Cell(
         request.session
           + (userNameKey -> userName)
-          + (teamIdKey   -> team.id)
-          + (teamNameKey -> team.name)
+          + (teamIdKey   -> teamId)
+          + (teamNameKey -> teamName)
       )
     )
 }

@@ -17,10 +17,12 @@
 package controllers.createthread
 
 import com.google.inject.Inject
-import connectors.ThreadCreateConnector
+import connectors.{TeamsConnector, ThreadCreateConnector}
 import controllers.actions.{DataRequiredAction, DataRetrievalAction, IdentifierAction}
+import models.*
 import models.requests.CreateThreadRequest
 import pages.{RecipientDetailsPage, ThreadDetailsPage}
+import play.api.Logging
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.*
 import repositories.SessionRepository
@@ -39,10 +41,12 @@ class CheckYourAnswersController @Inject() (
   val controllerComponents: MessagesControllerComponents,
   view:                     CheckYourAnswersView,
   threadCreateConnector:    ThreadCreateConnector,
-  sessionRepository:        SessionRepository
+  sessionRepository:        SessionRepository,
+  teamsConnector:           TeamsConnector
 )(using ExecutionContext)
     extends FrontendBaseController
-    with I18nSupport {
+    with I18nSupport
+    with Logging {
 
   def onPageLoad(): Action[AnyContent] = (identify andThen getData andThen requireData) { request =>
     given Request[AnyContent] = request
@@ -64,41 +68,61 @@ class CheckYourAnswersController @Inject() (
     (identify andThen getData andThen requireData).async { request =>
       given Request[AnyContent] = request
 
-      (
-        request.userAnswers.get(RecipientDetailsPage),
-        request.userAnswers.get(ThreadDetailsPage)
-      ) match {
+      val creator = UserRef(request.userId, request.userName)
 
-        case (Some(recipient), Some(threadDetails)) =>
-
-          val createThreadRequest =
-            CreateThreadRequest(
-              recipientDetails = recipient,
-              threadDetails = threadDetails
+      val result =
+        for {
+          recipient     <- request.userAnswers.get(RecipientDetailsPage)
+          threadDetails <- request.userAnswers.get(ThreadDetailsPage)
+        } yield teamsConnector.getTeam(request.teamId).flatMap {
+          case Some(team) =>
+            createThread(
+              creator,
+              team.ownerFor(creator),
+              team,
+              recipient,
+              threadDetails,
+              request.userAnswers
             )
+          case None =>
+            logger.error(s"Team ${request.teamId} could not be resolved at submit")
+            Future.successful(Redirect(controllers.routes.JourneyRecoveryController.onPageLoad()))
+        }
 
-          threadCreateConnector
-            .createThread(createThreadRequest)
-            .flatMap { response =>
-              for {
-                cleared <- Future.fromTry(
-                             request.userAnswers
-                               .remove(RecipientDetailsPage)
-                               .flatMap(_.remove(ThreadDetailsPage))
-                           )
-                _ <- sessionRepository.set(cleared)
-              } yield Redirect(
-                controllers.createthread.routes.ThreadViewController.onPageLoad(response.threadReference)
-              )
-                .flashing("confirmationBanner" -> "true")
-            }
-
-        case _ =>
-          Future.successful(
-            Redirect(
-              controllers.routes.JourneyRecoveryController.onPageLoad()
-            )
-          )
-      }
+      result.getOrElse(
+        Future.successful(Redirect(controllers.routes.JourneyRecoveryController.onPageLoad()))
+      )
     }
+
+  private def createThread(
+    threadCreator:    UserRef,
+    threadOwner:      Option[UserRef],
+    team:             Team,
+    recipientDetails: RecipientDetails,
+    threadDetails:    ThreadDetails,
+    userAnswers:      UserAnswers
+  )(using Request[AnyContent]): Future[Result] = {
+
+    val createThreadRequest =
+      CreateThreadRequest(
+        threadCreator = threadCreator,
+        threadOwner = threadOwner,
+        owningTeam = team,
+        recipientDetails = recipientDetails,
+        threadDetails = threadDetails
+      )
+
+    for {
+      response <- threadCreateConnector.createThread(createThreadRequest)
+      cleared  <- Future.fromTry(
+                   userAnswers
+                     .remove(RecipientDetailsPage)
+                     .flatMap(_.remove(ThreadDetailsPage))
+                 )
+      _ <- sessionRepository.set(cleared)
+    } yield Redirect(
+      controllers.createthread.routes.ThreadViewController.onPageLoad(response.threadReference)
+    )
+      .flashing("confirmationBanner" -> "true")
+  }
 }

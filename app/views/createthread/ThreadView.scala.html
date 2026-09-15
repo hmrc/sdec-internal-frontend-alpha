@@ -119,10 +119,34 @@
 
             <p class="govuk-body">
             @if(thread.status == "Active") {
-    @messages("threadView.responseRequested")
-   } else {
-    @messages("threadView.noResponse")
-   }
+                @messages("threadView.responseRequested")
+            } else {
+                @messages("threadView.noResponse")
+            }
+            </p>
+
+            <h2 class="govuk-heading-s">
+            @messages("thread.details.creator")
+            </h2>
+
+            <p class="govuk-body">
+            @thread.threadCreator.name
+            </p>
+
+            <h2 class="govuk-heading-s">
+            @messages("thread.details.owner")
+            </h2>
+
+            <p class="govuk-body">
+            @thread.threadOwner.map(_.name).getOrElse(messages("thread.details.owner.unassigned"))
+            </p>
+
+            <h2 class="govuk-heading-s">
+            @messages("thread.details.owningTeam")
+            </h2>
+
+            <p class="govuk-body">
+            @thread.owningTeam.name
             </p>
 
             <h2 class="govuk-heading-s govuk-!-margin-top-6">

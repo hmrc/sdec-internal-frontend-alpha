@@ -33,7 +33,7 @@ class DataRetrievalActionImpl @Inject() (
   ): Future[OptionalDataRequest[A]] =
 
     sessionRepository.get(request.userId).map {
-      OptionalDataRequest(request.request, request.userId, _)
+      OptionalDataRequest(request.request, request.userId, request.userName, request.teamId, _)
     }
 }
 

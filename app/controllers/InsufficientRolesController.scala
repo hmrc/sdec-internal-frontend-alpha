@@ -14,13 +14,22 @@
  * limitations under the License.
  */
 
-package models.requests
+package controllers
 
-import play.api.mvc.{Request, WrappedRequest}
+import play.api.i18n.I18nSupport
+import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
+import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
+import views.html.InsufficientRolesView
 
-case class IdentifierRequest[A](
-  request:  Request[A],
-  userId:   String,
-  userName: String,
-  teamId:   String
-) extends WrappedRequest[A](request)
+import javax.inject.Inject
+
+class InsufficientRolesController @Inject() (
+  val controllerComponents: MessagesControllerComponents,
+  view:                     InsufficientRolesView
+) extends FrontendBaseController
+    with I18nSupport {
+
+  def onPageLoad(): Action[AnyContent] = Action { implicit request =>
+    Ok(view())
+  }
+}

@@ -19,7 +19,7 @@ package controllers.createthread
 import controllers.actions.{DataRetrievalAction, IdentifierAction}
 import controllers.routes
 import forms.RecipientDetailsFormProvider
-import models.requests.OptionalDataRequest
+import models.requests.{IdentifierRequest, OptionalDataRequest}
 import models.{NormalMode, RecipientDetails, UserAnswers}
 import navigation.Navigator
 import pages.RecipientDetailsPage
@@ -28,11 +28,13 @@ import play.api.data.Form
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.*
 import repositories.SessionRepository
+import stride.StrideAuthAlgebra
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import views.html.createthread.RecipientDetailsView
 
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
+import scala.util.{Failure, Success}
 import scala.util.control.NonFatal
 
 class RecipientDetailsController @Inject() (
@@ -40,6 +42,7 @@ class RecipientDetailsController @Inject() (
   sessionRepository:        SessionRepository,
   navigator:                Navigator,
   identify:                 IdentifierAction,
+  strideAuth:               StrideAuthAlgebra,
   getData:                  DataRetrievalAction,
   formProvider:             RecipientDetailsFormProvider,
   val controllerComponents: MessagesControllerComponents,
@@ -51,19 +54,68 @@ class RecipientDetailsController @Inject() (
 
   private val form: Form[RecipientDetails] = formProvider()
 
-  def onPageLoad(): Action[AnyContent] = (identify andThen getData) { request =>
-    given Request[AnyContent] = request
-
-    val preparedForm = userAnswersFor(request).get(RecipientDetailsPage) match {
-      case None        => form
-      case Some(value) => form.fill(value)
+  def onPageLoad(): Action[AnyContent] =
+    strideAuth.authorisedFromStride { (user, request) =>
+      given Request[AnyContent] = request
+      val idaction: IdentifierRequest[AnyContent] =
+        IdentifierRequest(request = request, userId = user.credentials.providerId)
+      getData.retrieve(idaction).map { requestWithData =>
+        val preparedForm = userAnswersFor(requestWithData).get(RecipientDetailsPage) match {
+          case Some(value) => form.fill(value)
+          case None        => form
+        }
+        Ok(view(preparedForm))
+      }
     }
 
-    Ok(view(preparedForm))
-  }
+  def onsubmit(): Action[AnyContent] =
+    strideAuth.authorisedFromStride { (user, request) =>
+      given Request[AnyContent] = request
 
-  def onSubmit(): Action[AnyContent] = (identify andThen getData).async { request =>
+      val identifierRequest =
+        IdentifierRequest(
+          request = request,
+          userId = user.credentials.providerId
+        )
+
+      getData.retrieve(identifierRequest).flatMap { requestWithData =>
+        form
+          .bindFromRequest()
+          .fold(
+            (formWithErrors: Form[RecipientDetails]) =>
+              Future.successful(
+                BadRequest(view(remapCaseReferenceError(formWithErrors)))
+              ),
+            value =>
+              (for {
+                updatedAnswers <- Future.fromTry(
+                                    userAnswersFor(requestWithData).set(RecipientDetailsPage, value)
+                                  )
+                _ <- sessionRepository.set(updatedAnswers)
+              } yield Redirect(
+                navigator.nextPage(
+                  RecipientDetailsPage,
+                  NormalMode,
+                  updatedAnswers
+                )
+              )).recover { case NonFatal(exception) =>
+                logger.error("Failed to save the recipient details", exception)
+                Redirect(routes.JourneyRecoveryController.onPageLoad())
+              }
+          )
+      }
+    }
+
+  def onSubmit(): Action[AnyContent] = strideAuth.authorisedFromStride { (user, request) =>
     given Request[AnyContent] = request
+
+    val identifierRequest =
+      IdentifierRequest(
+        request = request,
+        userId = user.credentials.providerId
+      )
+
+    val ua = getData.retrieve(identifierRequest).map(userAnswersFor)
 
     form
       .bindFromRequest()
@@ -72,8 +124,13 @@ class RecipientDetailsController @Inject() (
           Future.successful(BadRequest(view(remapCaseReferenceError(formWithErrors)))),
         value =>
           (for {
-            updatedAnswers <- Future.fromTry(userAnswersFor(request).set(RecipientDetailsPage, value))
-            _              <- sessionRepository.set(updatedAnswers)
+            // updatedAnswers <- Future.fromTry(userAnswersFor(request).set(RecipientDetailsPage, value))
+            updatedAnswers1 <- ua
+            updatedAnswers = updatedAnswers1.set(RecipientDetailsPage, value) match {
+                               case Failure(exception) => updatedAnswers1
+                               case Success(value)     => value
+                             }
+            _ <- sessionRepository.set(updatedAnswers)
           } yield Redirect(navigator.nextPage(RecipientDetailsPage, NormalMode, updatedAnswers))).recover {
             case NonFatal(exception) =>
               logger.error("Failed to save the recipient details", exception)

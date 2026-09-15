@@ -20,6 +20,7 @@ import play.api.Logging
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import services.DashboardService
+import stride.StrideAuthAlgebra
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import uk.gov.hmrc.play.http.HeaderCarrierConverter
@@ -32,6 +33,7 @@ import scala.util.control.NonFatal
 class DashboardController @Inject() (
   val controllerComponents: MessagesControllerComponents,
   identify:                 IdentifierAction,
+  strideAuth:               StrideAuthAlgebra,
   dashboardService:         DashboardService,
   view:                     DashboardView
 )(using ExecutionContext)
@@ -39,23 +41,26 @@ class DashboardController @Inject() (
     with I18nSupport
     with Logging {
 
-  def onPageLoad(): Action[AnyContent] = identify.async { request =>
-    given HeaderCarrier = HeaderCarrierConverter.fromRequestAndSession(request, request.session)
+  def onPageLoad(): Action[AnyContent] =
+    strideAuth.authorisedFromStride { (strideUser, request) =>
+      given HeaderCarrier = HeaderCarrierConverter.fromRequest(request)
+      logger.info(s"STRIDE User [$strideUser]")
+      request.headers.toMap.foreach((k, v) => logger.info(s"Request Header: Key: $k, Value: ${v.mkString(",")}"))
 
-    dashboardService
-      .getDashboardThreads()
-      .map { dashboardThreads =>
-        Ok(
-          view(dashboardThreads)(using
-            request,
-            request2Messages(request)
+      dashboardService
+        .getDashboardThreads()
+        .map { dashboardThreads =>
+          Ok(
+            view(dashboardThreads)(using
+              request,
+              request2Messages(request)
+            )
           )
-        )
-      }
-      .recover { case NonFatal(exception) =>
-        logger.error("Failed to load the Workspace", exception)
-        Redirect(routes.JourneyRecoveryController.onPageLoad())
-      }
-  }
+        }
+        .recover { case NonFatal(exception) =>
+          logger.error("Failed to load the Workspace", exception)
+          Redirect(routes.JourneyRecoveryController.onPageLoad())
+        }
+    }
 
 }

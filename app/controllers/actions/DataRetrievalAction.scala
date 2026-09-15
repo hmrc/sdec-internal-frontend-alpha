@@ -37,4 +37,9 @@ class DataRetrievalActionImpl @Inject() (
     }
 }
 
-trait DataRetrievalAction extends ActionTransformer[IdentifierRequest, OptionalDataRequest]
+trait DataRetrievalAction extends ActionTransformer[IdentifierRequest, OptionalDataRequest] {
+  def retrieve[A](
+    request: IdentifierRequest[A]
+  ): Future[OptionalDataRequest[A]] =
+    transform(request)
+}

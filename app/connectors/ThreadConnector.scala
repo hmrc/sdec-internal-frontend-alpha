@@ -18,6 +18,8 @@ package connectors
 
 import config.FrontendAppConfig
 import models.{Thread, ThreadReference}
+import play.api.Logging
+import stride.StrideAuthUser
 import uk.gov.hmrc.http.HttpReads.Implicits.readFromJson
 import uk.gov.hmrc.http.client.HttpClientV2
 import uk.gov.hmrc.http.{HeaderCarrier, StringContextOps}
@@ -29,14 +31,17 @@ import scala.concurrent.{ExecutionContext, Future}
 class ThreadConnector @Inject() (
   httpClient: HttpClientV2,
   appConfig:  FrontendAppConfig
-)(using ec: ExecutionContext) {
+)(using ec: ExecutionContext)
+    extends Logging {
 
   def getAll()(using hc: HeaderCarrier): Future[Seq[Thread]] =
     httpClient
       .get(url"${appConfig.threadSummariesUrl}")
       .execute[Seq[Thread]]
 
-  def get(threadReference: ThreadReference)(using hc: HeaderCarrier): Future[Option[Thread]] =
+  def get(user: StrideAuthUser, threadReference: ThreadReference)(using hc: HeaderCarrier): Future[Option[Thread]] = {
+    logger.info(s"Getting thread reference $threadReference for user $user")
     getAll().map(_.find(_.threadReference == threadReference))
+  }
 
 }

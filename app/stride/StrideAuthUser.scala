@@ -33,7 +33,7 @@ object StrideAuthUser {
     credentialOptions:     Option[Credentials],
     email:                 Option[String],
     authorisedEnrollments: Enrolments,
-    allEnrollemnts:        Enrolments,
+    allEnrollments:        Enrolments,
     nameOption:            Option[Name]
   ): StrideAuthUser =
     StrideAuthUser(
@@ -44,7 +44,7 @@ object StrideAuthUser {
         throw new IllegalArgumentException("No STRIDE Email provided")
       ),
       authorisedEnrollments = authorisedEnrollments,
-      allEnrollments = allEnrollemnts,
+      allEnrollments = allEnrollments,
       name = nameOption.getOrElse(Name(None, None))
     )
 }

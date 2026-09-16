@@ -26,6 +26,7 @@ import uk.gov.hmrc.auth.core.AuthProvider.PrivilegedApplication
 import uk.gov.hmrc.auth.core.retrieve.v2.Retrievals
 import uk.gov.hmrc.auth.core.retrieve.~
 import uk.gov.hmrc.auth.core.{AuthConnector, AuthProviders, AuthorisedFunctions, InsufficientEnrolments, NoActiveSession}
+import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendHeaderCarrierProvider
 
 import javax.inject.Inject
@@ -53,28 +54,32 @@ class StrideAuth @Inject() (
     with FrontendHeaderCarrierProvider
     with Logging {
 
+  override def authorisedFromStrideWithData(
+    action: (StrideAuthUser, DataRequest[AnyContent]) => Future[Result]
+  )(implicit ec: ExecutionContext): Action[AnyContent] =
+    authorisedFromStride { (user, request) =>
+      val idRequest = identifierRequest(user, request)
+      for {
+        optionalDataRequest <- dataRetrievalAction.retrieve(idRequest)
+        refinedRequest      <- dataRequiredAction.requireData(optionalDataRequest)
+        result              <- refinedRequest match {
+                    case Left(result) =>
+                      Future.successful(result)
+
+                    case Right(dataRequest) =>
+                      action(user, dataRequest)
+                  }
+      } yield result
+    }
+
   override def authorisedFromStride(action: (StrideAuthUser, Request[AnyContent]) => Future[Result])(implicit
     ec: ExecutionContext
   ): Action[AnyContent] =
     actionBuilder.async { request =>
       given givenRequest: Request[AnyContent] = request
-      authorised(AuthProviders(PrivilegedApplication))
-        .retrieve(
-          Retrievals.credentials
-            .and(Retrievals.email)
-            .and(Retrievals.authorisedEnrolments)
-            .and(Retrievals.allEnrolments)
-            .and(Retrievals.name)
-        ) { case credentials ~ email ~ authorisedEnrollments ~ allEnrollments ~ name =>
-          val strideUser = StrideAuthUser(credentials, email, authorisedEnrollments, allEnrollments, name)
-          logger.info(s"====================================================")
-          logger.info(s"Internal Staff: ${strideUser.name}")
-          logger.info(s"Email Address: ${strideUser.email}")
-          logger.info(s"Credentials: ${strideUser.credentials}")
-          logger.info(s"Authorised Enrollments: ${strideUser.authorisedEnrollments.enrolments.mkString(",")}")
-          logger.info(s"All Enrollments: ${strideUser.allEnrollments.enrolments.mkString(",")}")
-          logger.info(s"====================================================")
-          action(strideUser, request)
+      authenticate(request)
+        .flatMap { user =>
+          action(user, request)
         }
         .recoverWith {
           case e: NoActiveSession =>
@@ -93,21 +98,27 @@ class StrideAuth @Inject() (
         }
     }
 
-  override def authorisedFromStrideWithData(
-    action: (StrideAuthUser, DataRequest[AnyContent]) => Future[Result]
-  )(implicit ec: ExecutionContext): Action[AnyContent] =
-    authorisedFromStride { (user, request) =>
-      val idRequest = identifierRequest(user, request)
-      for {
-        optionalDataRequest <- dataRetrievalAction.retrieve(idRequest)
-        refinedRequest      <- dataRequiredAction.requireData(optionalDataRequest)
-        result              <- refinedRequest match {
-                    case Left(result) =>
-                      Future.successful(result)
+  protected def authenticate(request: Request[AnyContent])(implicit
+    hc: HeaderCarrier,
+    ec: ExecutionContext
+  ): Future[StrideAuthUser] =
+    authorised(AuthProviders(PrivilegedApplication))
+      .retrieve(
+        Retrievals.credentials
+          .and(Retrievals.email)
+          .and(Retrievals.authorisedEnrolments)
+          .and(Retrievals.allEnrolments)
+          .and(Retrievals.name)
+      ) { case credentials ~ email ~ authorisedEnrollments ~ allEnrollments ~ name =>
+        val strideUser = StrideAuthUser(credentials, email, authorisedEnrollments, allEnrollments, name)
+        logger.info(s"====================================================")
+        logger.info(s"Internal Staff: ${strideUser.name}")
+        logger.info(s"Email Address: ${strideUser.email}")
+        logger.info(s"Credentials: ${strideUser.credentials}")
+        logger.info(s"Authorised Enrollments: ${strideUser.authorisedEnrollments.enrolments.mkString(",")}")
+        logger.info(s"All Enrollments: ${strideUser.allEnrollments.enrolments.mkString(",")}")
+        logger.info(s"====================================================")
+        Future.successful(strideUser)
+      }
 
-                    case Right(dataRequest) =>
-                      action(user, dataRequest)
-                  }
-      } yield result
-    }
 }

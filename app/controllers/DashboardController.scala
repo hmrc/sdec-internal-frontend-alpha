@@ -45,8 +45,6 @@ class DashboardController @Inject() (
     strideAuth.authorisedFromStride { (strideUser, request) =>
       given HeaderCarrier = HeaderCarrierConverter.fromRequest(request)
       logger.info(s"STRIDE User [$strideUser]")
-      request.headers.toMap.foreach((k, v) => logger.info(s"Request Header: Key: $k, Value: ${v.mkString(",")}"))
-
       dashboardService
         .getDashboardThreads()
         .map { dashboardThreads =>

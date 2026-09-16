@@ -16,6 +16,18 @@
 
 package models.requests
 
-import play.api.mvc.{Request, WrappedRequest}
+import play.api.mvc.{AnyContent, Request, WrappedRequest}
+import stride.StrideAuthUser
 
 case class IdentifierRequest[A](request: Request[A], userId: String) extends WrappedRequest[A](request)
+
+object IdentifierRequest {
+  def identifierRequest(
+    user:    StrideAuthUser,
+    request: Request[AnyContent]
+  ): IdentifierRequest[AnyContent] =
+    IdentifierRequest(
+      request = request,
+      userId = user.credentials.providerId
+    )
+}

@@ -17,6 +17,9 @@
 package stride
 
 import config.FrontendAppConfig
+import controllers.actions.{DataRequiredAction, DataRetrievalAction}
+import models.requests.DataRequest
+import models.requests.IdentifierRequest.identifierRequest
 import play.api.Logging
 import play.api.mvc.*
 import uk.gov.hmrc.auth.core.AuthProvider.PrivilegedApplication
@@ -29,15 +32,21 @@ import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
 trait StrideAuthAlgebra {
-  def authorisedFromStride(
-    action: (StrideAuthUser, Request[AnyContent]) => Future[Result]
-  )(implicit ec: ExecutionContext): Action[AnyContent]
+  def authorisedFromStride(action: (StrideAuthUser, Request[AnyContent]) => Future[Result])(implicit
+    ec: ExecutionContext
+  ): Action[AnyContent]
+
+  def authorisedFromStrideWithData(action: (StrideAuthUser, DataRequest[AnyContent]) => Future[Result])(implicit
+    ec: ExecutionContext
+  ): Action[AnyContent]
 }
 
 class StrideAuth @Inject() (
-  val authConnector: AuthConnector,
-  actionBuilder:     DefaultActionBuilder,
-  config:            FrontendAppConfig
+  val authConnector:   AuthConnector,
+  actionBuilder:       DefaultActionBuilder,
+  config:              FrontendAppConfig,
+  dataRetrievalAction: DataRetrievalAction,
+  dataRequiredAction:  DataRequiredAction
 ) extends StrideAuthAlgebra
     with AuthorisedFunctions
     with Results
@@ -82,5 +91,23 @@ class StrideAuth @Inject() (
               SeeOther(controllers.routes.InsufficientRolesController.get.url)
             )
         }
+    }
+
+  override def authorisedFromStrideWithData(
+    action: (StrideAuthUser, DataRequest[AnyContent]) => Future[Result]
+  )(implicit ec: ExecutionContext): Action[AnyContent] =
+    authorisedFromStride { (user, request) =>
+      val idRequest = identifierRequest(user, request)
+      for {
+        optionalDataRequest <- dataRetrievalAction.retrieve(idRequest)
+        refinedRequest      <- dataRequiredAction.requireData(optionalDataRequest)
+        result              <- refinedRequest match {
+                    case Left(result) =>
+                      Future.successful(result)
+
+                    case Right(dataRequest) =>
+                      action(user, dataRequest)
+                  }
+      } yield result
     }
 }

@@ -25,8 +25,8 @@ body:has(.sdec-dashboard-page) {
 }
 
 .govuk-service-navigation {
-  border-bottom-color: #8eb8dc;
-  background-color: #f4f8fb;
+  border-bottom-color: govuk-colour("blue", $variant: "tint-50"); // #8eb8dc
+  background-color: govuk-colour("blue", $variant: "tint-95"); // #f4f8fb
 
   @include govuk-media-query($from: tablet) {
     .govuk-service-navigation__item,
@@ -48,7 +48,7 @@ body:has(.sdec-dashboard-page) {
 }
 
 .sdec-recipient-banner {
-  background-color: #8eb8dc;
+  background-color: govuk-colour("blue", $variant: "tint-50"); // #8eb8dc
   padding: govuk-spacing(3);
   margin-bottom: govuk-spacing(6);
 
@@ -64,8 +64,8 @@ body:has(.sdec-dashboard-page) {
 }
 
 .sdec-thread-response-banner {
-  background-color: #dbe7f3;
-  border-left: 5px solid #1d70b8;
+  background-color: govuk-colour("blue", $variant: "tint-80");
+  border-left: 5px solid govuk-colour("blue", $variant: "primary"); // #1d70b8
   padding: govuk-spacing(3);
   margin-bottom: govuk-spacing(4);
 }

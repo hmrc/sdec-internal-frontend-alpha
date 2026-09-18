@@ -19,6 +19,7 @@ package controllers.createthread
 import controllers.actions.{DataRetrievalAction, IdentifierAction}
 import controllers.routes
 import forms.RecipientDetailsFormProvider
+import models.requests.IdentifierRequest.identifierRequest
 import models.requests.OptionalDataRequest
 import models.{NormalMode, RecipientDetails, UserAnswers}
 import navigation.Navigator
@@ -28,6 +29,7 @@ import play.api.data.Form
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.*
 import repositories.SessionRepository
+import stride.StrideAuthAlgebra
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import views.html.createthread.RecipientDetailsView
 
@@ -40,6 +42,7 @@ class RecipientDetailsController @Inject() (
   sessionRepository:        SessionRepository,
   navigator:                Navigator,
   identify:                 IdentifierAction,
+  strideAuth:               StrideAuthAlgebra,
   getData:                  DataRetrievalAction,
   formProvider:             RecipientDetailsFormProvider,
   val controllerComponents: MessagesControllerComponents,
@@ -51,39 +54,71 @@ class RecipientDetailsController @Inject() (
 
   private val form: Form[RecipientDetails] = formProvider()
 
-  def onPageLoad(): Action[AnyContent] = (identify andThen getData) { request =>
-    given Request[AnyContent] = request
+  def onPageLoad(): Action[AnyContent] =
+    // We are using this method as there may not be any form data stored
+    strideAuth.authorisedFromStride { (user, request) =>
+      given Request[AnyContent] = request
 
-    val preparedForm = userAnswersFor(request).get(RecipientDetailsPage) match {
-      case None        => form
-      case Some(value) => form.fill(value)
+      val idRequest = identifierRequest(user, request)
+
+      getData.retrieve(idRequest).map { requestWithData =>
+        val userAnswers =
+          requestWithData.userAnswers.getOrElse(
+            UserAnswers(idRequest.userId)
+          )
+
+        val preparedForm =
+          userAnswers.get(RecipientDetailsPage) match {
+            case Some(value) => form.fill(value)
+            case None        => form
+          }
+
+        Ok(view(preparedForm))
+      }
     }
 
-    Ok(view(preparedForm))
-  }
+  def onSubmit(): Action[AnyContent] =
+    logger.info(s"Handling Recipient Details Submission")
+    strideAuth.authorisedFromStride { (user, dataRequest) =>
+      given Request[AnyContent] = dataRequest
+      val idRequest             = identifierRequest(user, dataRequest)
+      getData.retrieve(idRequest).flatMap(processForm)
+    }
 
-  def onSubmit(): Action[AnyContent] = (identify andThen getData).async { request =>
-    given Request[AnyContent] = request
-
+  private def processForm(
+    dataRequest: OptionalDataRequest[AnyContent]
+  )(using Request[AnyContent]): Future[Result] =
     form
       .bindFromRequest()
       .fold(
-        (formWithErrors: Form[RecipientDetails]) =>
-          Future.successful(BadRequest(view(remapCaseReferenceError(formWithErrors)))),
-        value =>
-          (for {
-            updatedAnswers <- Future.fromTry(userAnswersFor(request).set(RecipientDetailsPage, value))
-            _              <- sessionRepository.set(updatedAnswers)
-          } yield Redirect(navigator.nextPage(RecipientDetailsPage, NormalMode, updatedAnswers))).recover {
-            case NonFatal(exception) =>
-              logger.error("Failed to save the recipient details", exception)
-              Redirect(routes.JourneyRecoveryController.onPageLoad())
-          }
+        formWithErrors =>
+          Future.successful(
+            BadRequest(view(remapCaseReferenceError(formWithErrors)))
+          ),
+        recipientDetails => saveRecipientDetails(dataRequest, recipientDetails)
       )
-  }
 
-  private def userAnswersFor(request: OptionalDataRequest[AnyContent]): UserAnswers =
-    request.userAnswers.getOrElse(UserAnswers(request.userId))
+  private def saveRecipientDetails(
+    request:          OptionalDataRequest[AnyContent],
+    recipientDetails: RecipientDetails
+  ): Future[Result] =
+    (for {
+      updatedAnswers <- Future.fromTry(
+                          request.userAnswers
+                            .getOrElse(UserAnswers(request.userId))
+                            .set(RecipientDetailsPage, recipientDetails)
+                        )
+      _ <- sessionRepository.set(updatedAnswers)
+    } yield Redirect(
+      navigator.nextPage(
+        RecipientDetailsPage,
+        NormalMode,
+        updatedAnswers
+      )
+    )).recover { case NonFatal(exception) =>
+      logger.error("Failed to save the recipient details", exception)
+      Redirect(routes.JourneyRecoveryController.onPageLoad())
+    }
 
   private def remapCaseReferenceError(form: Form[RecipientDetails]): Form[RecipientDetails] =
     form.copy(errors = form.errors.map { e =>

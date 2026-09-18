@@ -20,6 +20,7 @@ import connectors.ThreadReferenceConnector
 import controllers.actions.IdentifierAction
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.*
+import stride.StrideAuthAlgebra
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import views.html.createthread.ThreadView
 
@@ -29,6 +30,7 @@ import scala.concurrent.ExecutionContext
 class ThreadViewController @Inject() (
   override val messagesApi: MessagesApi,
   identify:                 IdentifierAction,
+  strideAuth:               StrideAuthAlgebra,
   val controllerComponents: MessagesControllerComponents,
   view:                     ThreadView,
   threadReferenceConnector: ThreadReferenceConnector
@@ -37,15 +39,10 @@ class ThreadViewController @Inject() (
     with I18nSupport {
 
   def onPageLoad(threadReference: String): Action[AnyContent] =
-    identify.async { request =>
+    strideAuth.authorisedFromStride { (_, request) =>
       given Request[AnyContent] = request
-
       threadReferenceConnector
         .getThreadReference(threadReference)
-        .map { thread =>
-          Ok(
-            view(thread)
-          )
-        }
+        .map(t => Ok(view(t)))
     }
 }

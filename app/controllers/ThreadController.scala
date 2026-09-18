@@ -23,6 +23,7 @@ import models.ThreadReference
 import play.api.Logging
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
+import stride.StrideAuthAlgebra
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import uk.gov.hmrc.play.http.HeaderCarrierConverter
@@ -35,6 +36,7 @@ import scala.util.control.NonFatal
 class ThreadController @Inject() (
   val controllerComponents: MessagesControllerComponents,
   identify:                 IdentifierAction,
+  strideAuth:               StrideAuthAlgebra,
   threadConnector:          ThreadConnector,
   errorHandler:             ErrorHandler,
   view:                     ThreadDetailsView
@@ -43,22 +45,21 @@ class ThreadController @Inject() (
     with I18nSupport
     with Logging {
 
-  def onPageLoad(threadReference: ThreadReference): Action[AnyContent] = identify.async { request =>
-    given HeaderCarrier = HeaderCarrierConverter.fromRequestAndSession(request, request.session)
+  def onPageLoad(threadReference: ThreadReference): Action[AnyContent] =
+    strideAuth.authorisedFromStride { (user, request) =>
+      given HeaderCarrier = HeaderCarrierConverter.fromRequestAndSession(request, request.session)
 
-    threadConnector
-      .get(threadReference)
-      .flatMap {
-        case Some(thread) =>
-          Future.successful(Ok(view(thread)(using request, request2Messages(request))))
-        case None =>
-          errorHandler.notFoundTemplate(using request).map(NotFound(_))
-      }
-      .recover { case NonFatal(exception) =>
-        logger.error(s"Failed to load Thread (ref: ${threadReference.value})", exception)
-        Redirect(routes.JourneyRecoveryController.onPageLoad())
-      }
-
-  }
-
+      threadConnector
+        .get(user, threadReference)
+        .flatMap {
+          case Some(thread) =>
+            Future.successful(Ok(view(thread)(using request, request2Messages(request))))
+          case None =>
+            errorHandler.notFoundTemplate(using request).map(NotFound(_))
+        }
+        .recover { case NonFatal(exception) =>
+          logger.error(s"Failed to load Thread (ref: ${threadReference.value})", exception)
+          Redirect(routes.JourneyRecoveryController.onPageLoad())
+        }
+    }
 }

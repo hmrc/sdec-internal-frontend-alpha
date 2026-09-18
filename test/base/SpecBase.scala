@@ -28,6 +28,7 @@ import play.api.i18n.{Messages, MessagesApi}
 import play.api.inject.bind
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.test.FakeRequest
+import stride.{StrideAuthAlgebra, StrideAuthUser, TestStrideAuth}
 
 trait SpecBase
     extends AnyFreeSpec
@@ -37,7 +38,8 @@ trait SpecBase
     with ScalaFutures
     with IntegrationPatience
     with BeforeAndAfterEach
-    with AllMocks {
+    with AllMocks
+    with StrideAuthUserFixtures {
 
   val userAnswersId: String = "id"
 
@@ -55,6 +57,8 @@ trait SpecBase
         bind[IdentifierAction].to[FakeIdentifierAction],
         bind[DataRetrievalAction].toInstance(
           new FakeDataRetrievalAction(userAnswers)
-        )
+        ),
+        bind[StrideAuthUser].toInstance(testStrideAuthUser),
+        bind[StrideAuthAlgebra].to[TestStrideAuth]
       )
 }

@@ -42,4 +42,6 @@ class DataRequiredActionImpl @Inject() (implicit
     }
 }
 
-trait DataRequiredAction extends ActionRefiner[OptionalDataRequest, DataRequest]
+trait DataRequiredAction extends ActionRefiner[OptionalDataRequest, DataRequest] {
+  def requireData[A](request: OptionalDataRequest[A]): Future[Either[Result, DataRequest[A]]] = refine(request)
+}

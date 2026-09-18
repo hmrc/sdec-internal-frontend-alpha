@@ -1,5 +1,5 @@
-/*
- * Copyright 2026 HM Revenue & Customs
+@*
+ * Copyright 2023 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -12,22 +12,20 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- */
+ *@
 
-package models.requests
+@import config.FrontendAppConfig
 
-import play.api.mvc.{AnyContent, Request, WrappedRequest}
-import stride.StrideAuthUser
+@this(
+        layout: templates.Layout
+)
 
-case class IdentifierRequest[A](request: Request[A], userId: String) extends WrappedRequest[A](request)
+@()(implicit request: Request[?], messages: Messages, appConfig: FrontendAppConfig)
 
-object IdentifierRequest {
-  def identifierRequest(
-    user:    StrideAuthUser,
-    request: Request[AnyContent]
-  ): IdentifierRequest[AnyContent] =
-    IdentifierRequest(
-      request = request,
-      userId = user.credentials.providerId
-    )
+@layout(
+    pageTitle = titleNoForm(messages("sdec.dashboard.title")),
+    showBackLink = false
+) {
+    <h1 class="govuk-heading-l">@messages("insufficient.roles.header")</h1>
+    <p class="govuk-body">@messages("insufficient.roles.body")</p>
 }

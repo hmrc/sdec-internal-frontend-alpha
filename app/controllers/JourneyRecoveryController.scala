@@ -19,25 +19,30 @@ package controllers
 import controllers.actions.IdentifierAction
 import play.api.Logging
 import play.api.i18n.I18nSupport
-import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
+import play.api.mvc.{Action, AnyContent, MessagesControllerComponents, Request}
+import stride.StrideAuthAlgebra
 import uk.gov.hmrc.play.bootstrap.binders.*
 import uk.gov.hmrc.play.bootstrap.binders.RedirectUrl.*
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import views.html.{JourneyRecoveryContinueView, JourneyRecoveryStartAgainView}
 
 import javax.inject.Inject
+import scala.concurrent.{ExecutionContext, Future}
 
 class JourneyRecoveryController @Inject() (
   val controllerComponents: MessagesControllerComponents,
   identify:                 IdentifierAction,
+  strideAuth:               StrideAuthAlgebra,
   continueView:             JourneyRecoveryContinueView,
   startAgainView:           JourneyRecoveryStartAgainView
-) extends FrontendBaseController
+)(using ExecutionContext)
+    extends FrontendBaseController
     with I18nSupport
     with Logging {
 
   def onPageLoad(continueUrl: Option[RedirectUrl] = None): Action[AnyContent] =
-    identify { implicit request =>
+    strideAuth.authorisedFromStride { (_, request) =>
+      given Request[AnyContent] = request
       val safeUrl: Option[String] = continueUrl.flatMap { unsafeUrl =>
         unsafeUrl.getEither(OnlyRelative) match {
           case Right(safeUrl) =>
@@ -47,9 +52,10 @@ class JourneyRecoveryController @Inject() (
             None
         }
       }
-
-      safeUrl
-        .map(url => Ok(continueView(url)))
-        .getOrElse(Ok(startAgainView()))
+      Future.successful {
+        safeUrl
+          .map(url => Ok(continueView(url)))
+          .getOrElse(Ok(startAgainView()))
+      }
     }
 }

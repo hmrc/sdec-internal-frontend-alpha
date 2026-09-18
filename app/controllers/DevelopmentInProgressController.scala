@@ -19,20 +19,24 @@ package controllers
 import controllers.actions.IdentifierAction
 import play.api.i18n.I18nSupport
 import play.api.mvc.*
+import stride.StrideAuthAlgebra
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import views.html.DevelopmentInProgressView
 
 import javax.inject.{Inject, Singleton}
+import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
 class DevelopmentInProgressController @Inject() (
   val controllerComponents: MessagesControllerComponents,
   identify:                 IdentifierAction,
+  strideAuth:               StrideAuthAlgebra,
   view:                     DevelopmentInProgressView
-) extends FrontendBaseController
+)(using ExecutionContext)
+    extends FrontendBaseController
     with I18nSupport:
 
-  def onPageLoad(): Action[AnyContent] = identify { request =>
+  def onPageLoad(): Action[AnyContent] = strideAuth.authorisedFromStride { (_, request) =>
     given Request[AnyContent] = request
-    Ok(view())
+    Future.successful(Ok(view()))
   }

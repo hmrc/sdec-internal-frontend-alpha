@@ -18,7 +18,7 @@ package controllers.createthread
 
 import controllers.actions.{DataRetrievalAction, IdentifierAction}
 import forms.ThreadDetailsFormProvider
-import models.{NormalMode, ThreadDetails, UserAnswers}
+import models.{NormalMode, RecipientDetails, ThreadDetails, UserAnswers}
 import navigation.Navigator
 import pages.{RecipientDetailsPage, ThreadDetailsPage}
 import play.api.Logging
@@ -26,6 +26,7 @@ import play.api.data.Form
 import play.api.i18n.{I18nSupport, Messages, MessagesApi}
 import play.api.mvc.*
 import repositories.SessionRepository
+import stride.StrideAuthAlgebra
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import views.html.createthread.ThreadDetailsView
 
@@ -38,6 +39,7 @@ class ThreadDetailsController @Inject() (
   sessionRepository:        SessionRepository,
   navigator:                Navigator,
   identify:                 IdentifierAction,
+  strideAuth:               StrideAuthAlgebra,
   getData:                  DataRetrievalAction,
   formProvider:             ThreadDetailsFormProvider,
   val controllerComponents: MessagesControllerComponents,
@@ -53,55 +55,56 @@ class ThreadDetailsController @Inject() (
     formProvider()
   }
 
-  def onPageLoad(): Action[AnyContent] = (identify andThen getData) { request =>
-    given Request[AnyContent] = request
+  def onPageLoad(): Action[AnyContent] =
+    strideAuth.authorisedFromStrideWithData { (_, dataRequest) =>
+      given Request[AnyContent] = dataRequest
 
-    val userAnswers = request.userAnswers.getOrElse(UserAnswers(request.userId))
-
-    userAnswers.get(RecipientDetailsPage) match {
-      case None =>
-        Redirect(
-          controllers.createthread.routes.RecipientDetailsController.onPageLoad()
-        )
-      case Some(recipient) =>
-        val preparedForm = userAnswers.get(ThreadDetailsPage) match {
-          case None        => form
-          case Some(value) => form.fill(value)
-        }
-
-        Ok(view(preparedForm, recipient))
-    }
-  }
-
-  def onSubmit(): Action[AnyContent] = (identify andThen getData).async { request =>
-    given Request[AnyContent] = request
-
-    val userAnswers = request.userAnswers.getOrElse(UserAnswers(request.userId))
-
-    userAnswers.get(RecipientDetailsPage) match {
-      case None =>
-        Future.successful(
-          Redirect(
-            controllers.createthread.routes.RecipientDetailsController.onPageLoad()
+      dataRequest.userAnswers.get(RecipientDetailsPage) match {
+        case Some(recipient) =>
+          val preparedForm = dataRequest.userAnswers.get(ThreadDetailsPage) match {
+            case Some(values) => form.fill(values)
+            case None         => form
+          }
+          Future.successful(Ok(view(preparedForm, recipient)))
+        case None =>
+          logger.info(s"No match found for Recipient Details in ThreadDetailsController")
+          Future.successful(
+            Redirect(controllers.createthread.routes.RecipientDetailsController.onPageLoad())
           )
-        )
-      case Some(recipient) =>
-        form
-          .bindFromRequest()
-          .fold(
-            (formWithErrors: Form[ThreadDetails]) => Future.successful(BadRequest(view(formWithErrors, recipient))),
-            value =>
-              (for {
-                updatedAnswers <- Future
-                                    .fromTry(userAnswers.set(ThreadDetailsPage, value))
-                _ <- sessionRepository.set(updatedAnswers)
-              } yield Redirect(navigator.nextPage(ThreadDetailsPage, NormalMode, updatedAnswers))).recover {
-                case NonFatal(exception) =>
-                  logger.error("Failed to save the thread details", exception)
-                  Redirect(controllers.routes.JourneyRecoveryController.onPageLoad())
-              }
-          )
+      }
     }
-  }
+
+  def onSubmit(): Action[AnyContent] =
+    strideAuth.authorisedFromStrideWithData { (_, dataRequest) =>
+      given Request[AnyContent] = dataRequest
+
+      dataRequest.userAnswers.get(RecipientDetailsPage) match {
+        case Some(recipient) =>
+          form
+            .bindFromRequest()
+            .fold(
+              formWithErrors => Future.successful(BadRequest(view(formWithErrors, recipient))),
+              threadDetails => saveThreadDetails(threadDetails, dataRequest.userAnswers)
+            )
+        case None =>
+          Future.successful(
+            Redirect(
+              controllers.createthread.routes.RecipientDetailsController.onPageLoad()
+            )
+          )
+      }
+    }
+
+  private def saveThreadDetails(threadDetails: ThreadDetails, answers: UserAnswers): Future[Result] =
+    (for {
+      updatedAns <- Future.fromTry(answers.set(ThreadDetailsPage, threadDetails))
+      _          <- sessionRepository.set(updatedAns)
+
+    } yield Redirect(
+      navigator.nextPage(ThreadDetailsPage, NormalMode, updatedAns)
+    )).recover { case NonFatal(e) =>
+      logger.error(s"Failed to save thread details: ${e.getMessage}")
+      Redirect(controllers.routes.JourneyRecoveryController.onPageLoad())
+    }
 
 }

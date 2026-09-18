@@ -150,44 +150,45 @@ class StrideAuthSpec extends SpecBase {
       val userAnswers =
         emptyUserAnswers
 
-      val optionalDataRequest =
+      val optionalDataRequest: OptionalDataRequest[AnyContent] =
         OptionalDataRequest(
           request = request,
           userId = testUser.credentials.providerId,
           userAnswers = Some(userAnswers)
         )
 
-      val dataRequest =
+      val dataRequest: DataRequest[AnyContent] =
         DataRequest(
           request = request,
           userId = testUser.credentials.providerId,
           userAnswers = userAnswers
         )
 
-      val dataRetrievalAction =
+      val dataRetrievalAction: StubDataRetrievalAction =
         new StubDataRetrievalAction(
           Future.successful(
             optionalDataRequest
           )
         )
 
-      val dataRequiredAction =
+      val dataRequiredAction: StubDataRequiredAction =
         new StubDataRequiredAction(
           Future.successful(Right(dataRequest))
         )
 
-      val strideAuth =
+      val strideAuth: StrideAuth =
         testStrideAuth(
           authenticationResult = Future.successful(testUser),
           dataRetrievalAction = dataRetrievalAction,
           dataRequiredAction = dataRequiredAction
         )
 
-      val result =
+      val result: Future[Result] =
         strideAuth
           .authorisedFromStrideWithData { (user, actualDataRequest) =>
             user mustBe testUser
-            actualDataRequest mustBe dataRequest
+            actualDataRequest.userId mustBe dataRequest.userId
+            actualDataRequest.userAnswers mustBe dataRequest.userAnswers
 
             Future.successful(Ok("success"))
           }

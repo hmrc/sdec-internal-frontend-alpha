@@ -17,15 +17,18 @@
 package stride
 
 import com.google.inject.Inject
-import models.UserAnswers
+import controllers.actions.{DataRequiredAction, DataRetrievalAction}
 import models.requests.DataRequest
+import models.requests.IdentifierRequest.identifierRequest
 import play.api.mvc.*
 
 import scala.concurrent.{ExecutionContext, Future}
 
 class TestStrideAuth @Inject() (
-  strideUser:    StrideAuthUser,
-  actionBuilder: DefaultActionBuilder
+  strideUser:          StrideAuthUser,
+  dataRetrievalAction: DataRetrievalAction,
+  dataRequiredAction:  DataRequiredAction,
+  actionBuilder:       DefaultActionBuilder
 ) extends StrideAuthAlgebra {
 
   override def authorisedFromStride(
@@ -38,14 +41,15 @@ class TestStrideAuth @Inject() (
   override def authorisedFromStrideWithData(
     action: (StrideAuthUser, DataRequest[AnyContent]) => Future[Result]
   )(implicit ec: ExecutionContext): Action[AnyContent] =
-    actionBuilder.async { request =>
-      action(
-        strideUser,
-        DataRequest(
-          request = request,
-          userId = strideUser.credentials.providerId,
-          userAnswers = UserAnswers("id")
-        )
-      )
+    authorisedFromStride { (user, request) =>
+      val idRequest = identifierRequest(user, request)
+      for {
+        optionalDataRequest <- dataRetrievalAction.retrieve(idRequest)
+        refinedRequest      <- dataRequiredAction.requireData(optionalDataRequest)
+        result              <- refinedRequest match {
+                    case Left(result)       => Future.successful(result)
+                    case Right(dataRequest) => action(user, dataRequest)
+                  }
+      } yield result
     }
 }

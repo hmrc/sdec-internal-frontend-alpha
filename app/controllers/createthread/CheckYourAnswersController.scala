@@ -37,16 +37,12 @@ import scala.concurrent.{ExecutionContext, Future}
 
 class CheckYourAnswersController @Inject() (
   override val messagesApi: MessagesApi,
-  identify:                 IdentifierAction,
   strideAuth:               StrideAuthAlgebra,
-  getData:                  DataRetrievalAction,
-  requireData:              DataRequiredAction,
   checkYourAnswersService:  CheckYourAnswersService,
   val controllerComponents: MessagesControllerComponents,
   view:                     CheckYourAnswersView,
   threadCreateConnector:    ThreadCreateConnector,
   sessionRepository:        SessionRepository,
-  appConfig:                FrontendAppConfig
 )(using ExecutionContext)
     extends FrontendBaseController
     with I18nSupport {

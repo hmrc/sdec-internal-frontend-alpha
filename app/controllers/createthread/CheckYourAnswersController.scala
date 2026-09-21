@@ -40,7 +40,7 @@ class CheckYourAnswersController @Inject() (
   val controllerComponents: MessagesControllerComponents,
   view:                     CheckYourAnswersView,
   threadCreateConnector:    ThreadCreateConnector,
-  sessionRepository:        SessionRepository,
+  sessionRepository:        SessionRepository
 )(using ExecutionContext)
     extends FrontendBaseController
     with I18nSupport {

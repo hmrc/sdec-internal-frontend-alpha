@@ -75,7 +75,7 @@ class StrideAuthSpec extends SpecBase {
         strideAuth
           .authorisedFromStride { (user, actualRequest) =>
             user mustBe testUser
-            actualRequest mustBe request
+            actualRequest.session.get("userName") mustBe Some(testUser.displayName)
 
             Future.successful(Ok)
           }

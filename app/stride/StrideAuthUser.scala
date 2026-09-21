@@ -25,7 +25,13 @@ case class StrideAuthUser(
   authorisedEnrollments: Enrolments,
   allEnrollments:        Enrolments,
   name:                  Name
-)
+) {
+  def displayName: String =
+    Seq(name.name, name.lastName).flatten.mkString(" ") match {
+      case "" => credentials.providerId
+      case n  => n
+    }
+}
 
 object StrideAuthUser {
 

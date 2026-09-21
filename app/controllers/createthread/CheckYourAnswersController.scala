@@ -17,16 +17,17 @@
 package controllers.createthread
 
 import com.google.inject.Inject
+import config.FrontendAppConfig
 import connectors.ThreadCreateConnector
 import controllers.actions.{DataRequiredAction, DataRetrievalAction, IdentifierAction}
 import models.requests.{CreateThreadRequest, DataRequest}
-import models.{RecipientDetails, ThreadDetails}
+import models.{RecipientDetails, Team, ThreadDetails}
 import pages.{RecipientDetailsPage, ThreadDetailsPage}
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.*
 import repositories.SessionRepository
 import services.createthread.CheckYourAnswersService
-import stride.StrideAuthAlgebra
+import stride.{StrideAuthAlgebra, StrideAuthUser}
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import uk.gov.hmrc.play.http.HeaderCarrierConverter
@@ -44,7 +45,8 @@ class CheckYourAnswersController @Inject() (
   val controllerComponents: MessagesControllerComponents,
   view:                     CheckYourAnswersView,
   threadCreateConnector:    ThreadCreateConnector,
-  sessionRepository:        SessionRepository
+  sessionRepository:        SessionRepository,
+  appConfig:                FrontendAppConfig
 )(using ExecutionContext)
     extends FrontendBaseController
     with I18nSupport {
@@ -71,15 +73,17 @@ class CheckYourAnswersController @Inject() (
     }
 
   def onSubmit(): Action[AnyContent] =
-    strideAuth.authorisedFromStrideWithData { (_, dataRequest) =>
-      given HeaderCarrier       = HeaderCarrierConverter.fromRequest(dataRequest.request)
+    strideAuth.authorisedFromStrideWithData { (user, dataRequest) =>
+      given HeaderCarrier = HeaderCarrierConverter.fromRequest(dataRequest.request)
+
       given Request[AnyContent] = dataRequest
+
       (
         dataRequest.userAnswers.get(RecipientDetailsPage),
         dataRequest.userAnswers.get(ThreadDetailsPage)
       ) match {
         case (Some(recipient), Some(threadDetails)) =>
-          createThread(dataRequest, recipient, threadDetails)
+          createThread(user, dataRequest, recipient, threadDetails)
         case _ =>
           Future.successful(
             Redirect(controllers.routes.JourneyRecoveryController.onPageLoad())
@@ -88,12 +92,15 @@ class CheckYourAnswersController @Inject() (
     }
 
   private def createThread(
+    user:          StrideAuthUser,
     dataRequest:   DataRequest[AnyContent],
     recipient:     RecipientDetails,
     threadDetails: ThreadDetails
   )(using HeaderCarrier): Future[Result] = {
     val createThreadRequest =
       CreateThreadRequest(
+        threadCreator = user.credentials.providerId,
+        owningTeam = Team.fromRole(user.allEnrollments.enrolments.head.key),
         recipientDetails = recipient,
         threadDetails = threadDetails
       )

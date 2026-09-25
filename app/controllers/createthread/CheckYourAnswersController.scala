@@ -90,25 +90,28 @@ class CheckYourAnswersController @Inject() (
     dataRequest:   DataRequest[AnyContent],
     recipient:     RecipientDetails,
     threadDetails: ThreadDetails
-  )(using HeaderCarrier): Future[Result] = {
-    val createThreadRequest =
-      CreateThreadRequest(
-        threadCreator = user.credentials.providerId,
-        owningTeam = Team.fromRole(user.allEnrollments.enrolments.head.key),
-        recipientDetails = recipient,
-        threadDetails = threadDetails
-      )
-    threadCreateConnector
-      .createThread(createThreadRequest)
-      .flatMap { response =>
-        clearSession(dataRequest).map { _ =>
-          Redirect(
-            controllers.createthread.routes.ThreadViewController
-              .onPageLoad(response.threadReference)
-          ).flashing("confirmationBanner" -> "true")
-        }
-      }
-  }
+  )(using HeaderCarrier): Future[Result] =
+    user.allEnrollments.enrolments.headOption match {
+      case Some(enrolment) =>
+        val createThreadRequest = CreateThreadRequest(
+          threadCreator = user.credentials.providerId,
+          owningTeam = Team.fromRole(enrolment.key),
+          recipientDetails = recipient,
+          threadDetails = threadDetails
+        )
+        threadCreateConnector
+          .createThread(createThreadRequest)
+          .flatMap { response =>
+            clearSession(dataRequest).map { _ =>
+              Redirect(
+                controllers.createthread.routes.ThreadViewController
+                  .onPageLoad(response.threadReference)
+              ).flashing("confirmationBanner" -> "true")
+            }
+          }
+      case None =>
+        Future.failed(new IllegalStateException("User has no enrolments"))
+    }
 
   private def clearSession(
     dataRequest: DataRequest[AnyContent]

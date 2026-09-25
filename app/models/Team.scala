@@ -14,18 +14,18 @@
  * limitations under the License.
  */
 
-package models.requests
+package models
 
-import models.{RecipientDetails, Team, ThreadDetails}
-import play.api.libs.json.{Json, OFormat}
+import play.api.libs.json.{Format, Json}
 
-final case class CreateThreadRequest(
-  threadCreator:    String,
-  owningTeam:       Team,
-  recipientDetails: RecipientDetails,
-  threadDetails:    ThreadDetails
-)
+final case class Team(name: String, taskBased: Boolean)
 
-object CreateThreadRequest {
-  given OFormat[CreateThreadRequest] = Json.format[CreateThreadRequest]
+object Team {
+  given Format[Team] = Json.format[Team]
+
+  // TODO: populate from the role matrix
+  private val TaskBasedRoles: Set[String] = Set.empty
+
+  def fromRole(role: String): Team =
+    Team(name = role, taskBased = TaskBasedRoles.contains(role))
 }

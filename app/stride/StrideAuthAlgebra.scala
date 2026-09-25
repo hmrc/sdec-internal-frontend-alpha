@@ -22,10 +22,11 @@ import models.requests.DataRequest
 import models.requests.IdentifierRequest.identifierRequest
 import play.api.Logging
 import play.api.mvc.*
+import play.api.mvc.request.{Cell, RequestAttrKey}
+import uk.gov.hmrc.auth.core.*
 import uk.gov.hmrc.auth.core.AuthProvider.PrivilegedApplication
 import uk.gov.hmrc.auth.core.retrieve.v2.Retrievals
 import uk.gov.hmrc.auth.core.retrieve.~
-import uk.gov.hmrc.auth.core.{AuthConnector, AuthProviders, AuthorisedFunctions, InsufficientEnrolments, NoActiveSession}
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendHeaderCarrierProvider
 
@@ -79,11 +80,11 @@ class StrideAuth @Inject() (
       given givenRequest: Request[AnyContent] = request
       authenticate(request)
         .flatMap { user =>
-          action(user, request)
+          action(user, withUserName(request, user))
         }
         .recoverWith {
-          case e: NoActiveSession =>
-            logger.warn(s"No active session: ${e.reason}")
+          case e @ (_: NoActiveSession | _: UnsupportedAuthProvider) =>
+            logger.warn(s"No active Stride session: ${e.reason}")
             Future.successful(
               Redirect(
                 config.loginUrl,
@@ -120,5 +121,11 @@ class StrideAuth @Inject() (
         logger.info(s"====================================================")
         Future.successful(strideUser)
       }
+
+  private def withUserName(request: Request[AnyContent], user: StrideAuthUser): Request[AnyContent] =
+    request.addAttr(
+      RequestAttrKey.Session,
+      Cell(request.session + ("userName" -> user.displayName))
+    )
 
 }

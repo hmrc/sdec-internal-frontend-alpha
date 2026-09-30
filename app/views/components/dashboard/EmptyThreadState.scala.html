@@ -14,10 +14,18 @@
  * limitations under the License.
  *@
 
+@import models.ThreadFilter
+
 @this()
 
-@()
+@(selectedFilter: Option[ThreadFilter])(implicit messages: Messages)
 
-<p class="govuk-body">
-    There are currently no threads available.
-</p>
+@selectedFilter match {
+    case Some(appliedFilter) => {
+        <p class="govuk-body">@messages("dashboard.empty.filtered")</p>
+        <p class="govuk-body">@messages("dashboard.empty.filterApplied") <strong>@messages(s"dashboard.filters.${appliedFilter.value}")</strong></p>
+    }
+    case None => {
+        <p class="govuk-body">@messages("dashboard.empty.default")</p>
+    }
+}

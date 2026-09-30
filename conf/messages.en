@@ -63,6 +63,10 @@ dashboard.filters.in-progress = In progress
 dashboard.filters.open-threads = Open threads
 dashboard.filters.clear = Clear filters
 
+dashboard.empty.default = There are currently no threads available.
+dashboard.empty.filtered = There are no threads matching the filter you applied.
+dashboard.empty.filterApplied = Filter applied:
+
 dashboard.table.heading = Shared work queue
 dashboard.table.threadReference = Thread reference
 dashboard.table.relatedReference = Related reference

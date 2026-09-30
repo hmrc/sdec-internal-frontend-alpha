@@ -69,3 +69,8 @@ body:has(.sdec-dashboard-page) {
   padding: govuk-spacing(3);
   margin-bottom: govuk-spacing(4);
 }
+
+.sdec-filter-button--selected,
+.sdec-filter-button--selected:hover {
+  background-color: $govuk-focus-colour;
+}

@@ -14,12 +14,12 @@
  * limitations under the License.
  */
 
-package service
+package services
 
 import base.SpecBase
-import models.{Thread, ThreadReference}
-import org.mockito.ArgumentMatchers.any
-import org.mockito.Mockito.when
+import models.{Thread, ThreadFilter, ThreadQuery, ThreadReference}
+import org.mockito.ArgumentMatchers.{any, eq as eqTo}
+import org.mockito.Mockito.{verify, when}
 import services.DashboardService
 import uk.gov.hmrc.http.HeaderCarrier
 import viewmodels.{DashboardThread, ThreadPriority}
@@ -41,10 +41,41 @@ class DashboardServiceSpec()(using ExecutionContext) extends SpecBase {
 
   private val service = new DashboardService(mockThreadConnector, clock)
 
+  private val threadOwner  = "user-1"
+  private val secondUserId = "user-2"
+  private val thirdUserId  = "user-3"
+
+  private val baseThread = Thread(
+    threadReference = ThreadReference("THREAD1000AA"),
+    relatedReference = None,
+    externalContact = "John Doe",
+    status = "Active",
+    waitingOn = "Jane Doe",
+    deadline = None
+  )
+
+  private val userThread1: Thread = baseThread.copy(threadOwner = Some(threadOwner))
+  private val userThread2: Thread = baseThread.copy(threadOwner = Some(secondUserId))
+  private val userThread3: Thread = baseThread.copy(threadOwner = Some(thirdUserId))
+
+  private val allThreads: Seq[Thread] = Seq(userThread1, userThread2, userThread3)
+
   "getDashboardThreads" - {
 
     "return an empty sequence when no threads are provided" in {
       dashboardThreadsFor(Seq.empty) mustBe Seq.empty
+    }
+
+    "request only the user's own threads for the 'My threads' filter" in {
+      dashboardThreadsFor(allThreads, Some(ThreadFilter.MyThreads))
+
+      verify(mockThreadConnector).getAll(eqTo(ThreadQuery(threadOwner = Some(threadOwner))))(using any[HeaderCarrier])
+    }
+
+    "request every thread when no filter is applied" in {
+      dashboardThreadsFor(allThreads)
+
+      verify(mockThreadConnector).getAll(eqTo(ThreadQuery()))(using any[HeaderCarrier])
     }
 
     "map a thread to a dashboard thread" in {
@@ -160,10 +191,10 @@ class DashboardServiceSpec()(using ExecutionContext) extends SpecBase {
     }
   }
 
-  private def dashboardThreadsFor(threads: Seq[Thread]): Seq[DashboardThread] = {
-    when(mockThreadConnector.getAll()(using any[HeaderCarrier]))
+  private def dashboardThreadsFor(threads: Seq[Thread], filter: Option[ThreadFilter] = None): Seq[DashboardThread] = {
+    when(mockThreadConnector.getAll(any[ThreadQuery])(using any[HeaderCarrier]))
       .thenReturn(Future.successful(threads))
 
-    service.getDashboardThreads().futureValue
+    service.getDashboardThreads(userId = threadOwner, selectedFilter = filter).futureValue
   }
 }

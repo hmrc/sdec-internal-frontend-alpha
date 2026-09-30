@@ -16,6 +16,7 @@
 
 package controllers
 import controllers.actions.IdentifierAction
+import models.ThreadFilter
 import play.api.Logging
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
@@ -41,19 +42,14 @@ class DashboardController @Inject() (
     with I18nSupport
     with Logging {
 
-  def onPageLoad(): Action[AnyContent] =
+  def onPageLoad(filter: Option[ThreadFilter]): Action[AnyContent] =
     strideAuth.authorisedFromStride { (strideUser, request) =>
       given HeaderCarrier = HeaderCarrierConverter.fromRequest(request)
       logger.info(s"STRIDE User [$strideUser]")
       dashboardService
-        .getDashboardThreads()
+        .getDashboardThreads(userId = strideUser.credentials.providerId, selectedFilter = filter)
         .map { dashboardThreads =>
-          Ok(
-            view(dashboardThreads)(using
-              request,
-              request2Messages(request)
-            )
-          )
+          Ok(view(dashboardThreads, filter)(using request, request2Messages(request)))
         }
         .recover { case NonFatal(exception) =>
           logger.error("Failed to load the Workspace", exception)

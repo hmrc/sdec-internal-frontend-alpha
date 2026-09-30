@@ -31,6 +31,9 @@ case class StrideAuthUser(
       case "" => credentials.providerId
       case n  => n
     }
+
+  def fullName: Option[String] =
+    Some(Seq(name.name, name.lastName).flatten.mkString(" ")).filter(_.nonEmpty)
 }
 
 object StrideAuthUser {

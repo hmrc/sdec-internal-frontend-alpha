@@ -94,7 +94,8 @@ class CheckYourAnswersController @Inject() (
     user.allEnrollments.enrolments.headOption match {
       case Some(enrolment) =>
         val createThreadRequest = CreateThreadRequest(
-          threadCreator = user.credentials.providerId,
+          creatorPid = user.credentials.providerId,
+          creatorName = user.fullName,
           owningTeam = Team.fromRole(enrolment.key),
           recipientDetails = recipient,
           threadDetails = threadDetails

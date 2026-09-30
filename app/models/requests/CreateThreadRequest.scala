@@ -20,7 +20,8 @@ import models.{RecipientDetails, Team, ThreadDetails}
 import play.api.libs.json.{Json, OFormat}
 
 final case class CreateThreadRequest(
-  threadCreator:    String,
+  creatorPid:       String,
+  creatorName:      Option[String],
   owningTeam:       Team,
   recipientDetails: RecipientDetails,
   threadDetails:    ThreadDetails

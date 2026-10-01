@@ -36,6 +36,22 @@ trait StrideAuthUserFixtures {
     name = name
   )
 
-  val testStrideAuthUser: StrideAuthUser = createTestStrideAuthUser()
+  val testStrideAuthUser: StrideAuthUser =
+    createTestStrideAuthUser(
+      authorisedEnrollments = Set(
+        Enrolment(
+          "SDEC_VAT_User",
+          Seq.empty,
+          "activated"
+        )
+      ),
+      allEnrolments = Set(
+        Enrolment(
+          "SDEC_VAT_User",
+          Seq.empty,
+          "activated"
+        )
+      )
+    )
 
 }

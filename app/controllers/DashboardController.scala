@@ -82,6 +82,10 @@ class DashboardController @Inject() (
 
           }
         }
+        .recover { case NonFatal(exception) =>
+          logger.error("Failed to load the Workspace", exception)
+          Redirect(routes.JourneyRecoveryController.onPageLoad())
+        }
     }
 
 }

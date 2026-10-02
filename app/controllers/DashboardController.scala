@@ -47,9 +47,9 @@ class DashboardController @Inject() (
       given HeaderCarrier = HeaderCarrierConverter.fromRequest(request)
       logger.info(s"STRIDE User [$strideUser]")
       dashboardService
-        .getDashboardThreads(userId = strideUser.credentials.providerId, selectedFilter = filter)
-        .map { dashboardThreads =>
-          Ok(view(dashboardThreads, filter)(using request, request2Messages(request)))
+        .getDashboard(userId = strideUser.credentials.providerId, selectedFilter = filter)
+        .map { dashboard =>
+          Ok(view(dashboard)(using request, request2Messages(request)))
         }
         .recover { case NonFatal(exception) =>
           logger.error("Failed to load the Workspace", exception)

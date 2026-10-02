@@ -34,6 +34,11 @@ object ThreadFilter {
     def toThreadFilterOpt: Option[ThreadFilter] = values.find(_.value == value)
   }
 
+  // If staff belong to at least one task-based team, they do not see the filter "My threads"
+  def availableFor(teams: Seq[Team]): Seq[ThreadFilter] =
+    if teams.exists(_.taskBased) then Seq.empty
+    else Seq(MyThreads)
+
   given queryStringBindable(using stringBinder: QueryStringBindable[String]): QueryStringBindable[ThreadFilter] with {
     override def bind(key: String, params: Map[String, Seq[String]]): Option[Either[String, ThreadFilter]] =
       stringBinder.bind(key, params).flatMap {

@@ -16,10 +16,10 @@
 
 package services
 
-import connectors.ThreadConnector
+import connectors.{TeamConnector, ThreadConnector}
 import models.{Thread, ThreadFilter, ThreadQuery}
 import uk.gov.hmrc.http.HeaderCarrier
-import viewmodels.{DashboardThread, ThreadPriority}
+import viewmodels.{Dashboard, DashboardThread, ThreadPriority}
 
 import java.time.format.DateTimeFormatter
 import java.time.{Clock, LocalDate}
@@ -29,13 +29,22 @@ import scala.concurrent.{ExecutionContext, Future}
 @Singleton
 class DashboardService @Inject() (
   threadSummaryConnector: ThreadConnector,
+  teamConnector:          TeamConnector,
   clock:                  Clock
 )(using ExecutionContext) {
 
   private val dateFormatter: DateTimeFormatter =
     DateTimeFormatter.ofPattern("dd/MM/yyyy")
 
-  def getDashboardThreads(userId: String, selectedFilter: Option[ThreadFilter] = None)(using
+  def getDashboard(userId: String, selectedFilter: Option[ThreadFilter])(using HeaderCarrier): Future[Dashboard] =
+    for {
+      teams <- teamConnector.findTeamsByPid(userId)
+      availableFilters = ThreadFilter.availableFor(teams)
+      appliedFilter    = selectedFilter.filter(availableFilters.contains)
+      threads <- getDashboardThreads(userId, appliedFilter)
+    } yield Dashboard(threads, availableFilters, appliedFilter)
+
+  private def getDashboardThreads(userId: String, selectedFilter: Option[ThreadFilter] = None)(using
     HeaderCarrier
   ): Future[Seq[DashboardThread]] =
     threadSummaryConnector

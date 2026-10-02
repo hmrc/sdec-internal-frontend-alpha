@@ -14,22 +14,12 @@
  * limitations under the License.
  */
 
-package helpers
+package viewmodels
 
-import connectors.{TeamConnector, ThreadConnector}
-import org.mockito.Mockito
-import org.scalatest.BeforeAndAfterEach
-import org.scalatestplus.mockito.MockitoSugar
+import models.ThreadFilter
 
-trait AllMocks extends MockitoSugar { me: BeforeAndAfterEach =>
-
-  val mockTeamConnector:   TeamConnector   = mock[TeamConnector]
-  val mockThreadConnector: ThreadConnector = mock[ThreadConnector]
-
-  override protected def beforeEach(): Unit =
-    Seq(
-      mockTeamConnector,
-      mockThreadConnector
-    ).foreach(Mockito.reset(_))
-
-}
+final case class Dashboard(
+  threads:          Seq[DashboardThread],
+  availableFilters: Seq[ThreadFilter],
+  appliedFilter:    Option[ThreadFilter]
+)

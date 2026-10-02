@@ -17,7 +17,7 @@
 @import models.ThreadFilter
 @import play.twirl.api.HtmlFormat
 @import views.html.components.gds.*
-@import viewmodels.{DashboardThread, ThreadPriority}
+@import viewmodels.Dashboard
 @import views.html.components.dashboard.{EmptyThreadState, ThreadFilters, ThreadTable}
 
 @this(
@@ -29,7 +29,7 @@
         emptyThreadState: EmptyThreadState
 )
 
-@(threads: Seq[DashboardThread], selectedFilter: Option[ThreadFilter])(implicit request: Request[_], messages: Messages)
+@(dashboard: Dashboard)(implicit request: Request[_], messages: Messages)
 
 @layout(
     pageTitle = titleNoForm(messages("dashboard.title")),
@@ -51,12 +51,12 @@
             extraClasses = Seq("govuk-!-margin-bottom-3")
         )
 
-        @threadFilters(selectedFilter)
+        @threadFilters(dashboard.availableFilters, dashboard.appliedFilter)
 
-        @if(threads.nonEmpty) {
-            @threadTable(threads)
+        @if(dashboard.threads.nonEmpty) {
+            @threadTable(dashboard.threads)
         } else {
-            @emptyThreadState(selectedFilter)
+            @emptyThreadState(dashboard.appliedFilter)
         }
     </div>
 }

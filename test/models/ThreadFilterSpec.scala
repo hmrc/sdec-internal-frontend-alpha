@@ -27,6 +27,9 @@ class ThreadFilterSpec extends SpecBase {
   private val filterKey:          String = "filter"
   private val invalidFilterValue: String = "invalid-filter-value"
 
+  private val taskBasedTeam = Team(name = "child_benefit", taskBased = true)
+  private val nonTaskBasedTeam: Team = Team(name = "vat", taskBased = false)
+
   "toThreadFilterOpt" - {
     "must find every thread filter by its value" in
       ThreadFilter.values.foreach { threadFilter =>
@@ -35,6 +38,20 @@ class ThreadFilterSpec extends SpecBase {
 
     "must return None for unknown value" in {
       invalidFilterValue.toThreadFilterOpt mustBe None
+    }
+  }
+
+  "availableFor" - {
+    "must return the 'My threads' filter when staff belongs to no task-based team" in {
+      ThreadFilter.availableFor(Seq(nonTaskBasedTeam)) mustBe Seq(ThreadFilter.MyThreads)
+    }
+
+    "must return no filters when staff belongs to task-based team" in {
+      ThreadFilter.availableFor(Seq(taskBasedTeam)) mustBe Seq.empty[ThreadFilter]
+    }
+
+    "must return the 'My threads' filter when staff belongs to no teams" in {
+      ThreadFilter.availableFor(Seq.empty[Team]) mustBe Seq(ThreadFilter.MyThreads)
     }
   }
 

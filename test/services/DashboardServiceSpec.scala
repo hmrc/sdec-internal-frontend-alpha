@@ -17,12 +17,12 @@
 package services
 
 import base.SpecBase
-import models.{Thread, ThreadFilter, ThreadQuery, ThreadReference}
+import models.{Team, Thread, ThreadFilter, ThreadQuery, ThreadReference}
 import org.mockito.ArgumentMatchers.{any, eq as eqTo}
 import org.mockito.Mockito.{verify, when}
 import services.DashboardService
 import uk.gov.hmrc.http.HeaderCarrier
-import viewmodels.{DashboardThread, ThreadPriority}
+import viewmodels.{Dashboard, DashboardThread, ThreadPriority}
 
 import java.time.{Clock, LocalDate, ZoneOffset}
 import scala.concurrent.{ExecutionContext, Future}
@@ -39,7 +39,7 @@ class DashboardServiceSpec()(using ExecutionContext) extends SpecBase {
       ZoneOffset.UTC
     )
 
-  private val service = new DashboardService(mockThreadConnector, clock)
+  private val service = new DashboardService(mockThreadConnector, mockTeamConnector, clock)
 
   private val threadOwner  = "user-1"
   private val secondUserId = "user-2"
@@ -60,7 +60,10 @@ class DashboardServiceSpec()(using ExecutionContext) extends SpecBase {
 
   private val allThreads: Seq[Thread] = Seq(userThread1, userThread2, userThread3)
 
-  "getDashboardThreads" - {
+  private val taskBasedTeam:    Team = Team(name = "child_benefit", taskBased = true)
+  private val nonTaskBasedTeam: Team = Team(name = "vat", taskBased = false)
+
+  "getDashboard" - {
 
     "return an empty sequence when no threads are provided" in {
       dashboardThreadsFor(Seq.empty) mustBe Seq.empty
@@ -189,12 +192,41 @@ class DashboardServiceSpec()(using ExecutionContext) extends SpecBase {
 
       dashboardThreadsFor(Seq(thread)).head.priority mustBe ThreadPriority.None
     }
+
+    "provide the 'My threads' filter when staff belongs to no task-based team" in {
+      val dashboard = dashboardFor(allThreads, teams = Seq(nonTaskBasedTeam))
+
+      dashboard.availableFilters mustBe Seq(ThreadFilter.MyThreads)
+    }
+
+    "provide no filters when staff belongs to at least one task-based team" in {
+      val dashboard = dashboardFor(allThreads, teams = Seq(nonTaskBasedTeam, taskBasedTeam))
+
+      dashboard.availableFilters mustBe empty
+    }
+
+    "ignore the 'My threads' filter in the URL when staff belongs to at least one task-based team" in {
+      val dashboard = dashboardFor(allThreads, teams = Seq(taskBasedTeam), filter = Some(ThreadFilter.MyThreads))
+
+      dashboard.appliedFilter mustBe None
+    }
   }
 
-  private def dashboardThreadsFor(threads: Seq[Thread], filter: Option[ThreadFilter] = None): Seq[DashboardThread] = {
+  private def dashboardFor(
+    threads: Seq[Thread],
+    teams:   Seq[Team] = Seq.empty,
+    filter:  Option[ThreadFilter] = None
+  ): Dashboard = {
     when(mockThreadConnector.getAll(any[ThreadQuery])(using any[HeaderCarrier]))
       .thenReturn(Future.successful(threads))
 
-    service.getDashboardThreads(userId = threadOwner, selectedFilter = filter).futureValue
+    when(mockTeamConnector.findTeamsByPid(any[String])(using any[HeaderCarrier]))
+      .thenReturn(Future.successful(teams))
+
+    service.getDashboard(userId = threadOwner, selectedFilter = filter).futureValue
   }
+
+  private def dashboardThreadsFor(threads: Seq[Thread], filter: Option[ThreadFilter] = None): Seq[DashboardThread] =
+    dashboardFor(threads, filter = filter).threads
+
 }

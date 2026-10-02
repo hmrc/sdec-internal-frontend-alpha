@@ -55,6 +55,7 @@ class FrontendAppConfig @Inject() (configuration: Configuration, servicesConfig:
   val threadSummariesUrl: String = s"$threadInfoApiBaseUrl/sdec-threadinfo-api-alpha/threads"
   val threadReferenceUrl: String = s"$threadInfoApiBaseUrl/sdec-threadinfo-api-alpha/thread-reference"
   val threadCreateUrl:    String = s"$threadInfoApiBaseUrl/sdec-threadinfo-api-alpha/thread-create"
+  val staffUrl:           String = s"$threadInfoApiBaseUrl/sdec-threadinfo-api-alpha/staff"
 
   val timeout:   Int = configuration.get[Int]("timeout-dialog.timeout")
   val countdown: Int = configuration.get[Int]("timeout-dialog.countdown")

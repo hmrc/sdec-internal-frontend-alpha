@@ -17,7 +17,8 @@
 package controllers
 
 import base.SpecBase
-import connectors.ThreadConnector
+import connectors.{TeamConnector, ThreadConnector}
+import models.Team
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.when
 import play.api.inject.bind
@@ -29,8 +30,18 @@ import scala.concurrent.Future
 
 class DashboardControllerSpec extends SpecBase {
 
+  Team(name = "child_benefit", taskBased = true)
+  Team(name = "vat", taskBased = false)
+
+  override protected def beforeEach(): Unit = {
+    super.beforeEach()
+    when(mockTeamConnector.findTeamsByPid(any())(using any[HeaderCarrier]))
+      .thenReturn(Future.successful(Seq.empty))
+  }
+
   private def baseApplication = applicationBuilder(userAnswers = None)
     .overrides(
+      bind[TeamConnector].toInstance(mockTeamConnector),
       bind[ThreadConnector].toInstance(mockThreadConnector)
     )
 

@@ -19,21 +19,24 @@
 
 @this()
 
-@(selectedFilter: Option[ThreadFilter])(implicit messages: Messages)
+@(availableFilters: Seq[ThreadFilter], selectedFilter: Option[ThreadFilter])(implicit messages: Messages)
 
-<p class="govuk-heading-m govuk-!-margin-bottom-1">@messages("dashboard.filters.filterBy")</p>
+@if(availableFilters.nonEmpty) {
 
-<div id="dashboard-filters" class="govuk-button-group">
-    @for(threadFilter <- Seq(ThreadFilter.MyThreads)) {
-        @defining(selectedFilter.contains(threadFilter)) { isSelected =>
-            <a href="@controllers.routes.DashboardController.onPageLoad(Some(threadFilter)).url" role="button" class="govuk-button govuk-button--secondary sdec-filter-button@if(isSelected) { sdec-filter-button--selected}"@if(isSelected) {
-                aria-current="true"
-            }>@messages(s"dashboard.filters.${threadFilter.value}")</a>
+    <p class="govuk-heading-m govuk-!-margin-bottom-1">@messages("dashboard.filters.filterBy")</p>
+
+    <div id="dashboard-filters" class="govuk-button-group">
+        @for(threadFilter <- availableFilters) {
+            @defining(selectedFilter.contains(threadFilter)) { isSelected =>
+                <a href="@controllers.routes.DashboardController.onPageLoad(Some(threadFilter)).url" role="button" class="govuk-button govuk-button--secondary sdec-filter-button@if(isSelected) { sdec-filter-button--selected}"@if(isSelected) {
+                    aria-current="true"
+                }>@messages(s"dashboard.filters.${threadFilter.value}")</a>
+            }
         }
-    }
-    @if(selectedFilter.isDefined) {
-        <a href="@controllers.routes.DashboardController.onPageLoad().url"
-        class="govuk-button govuk-button--secondary govuk-link--no-visited-state"
-        role="button">@messages("dashboard.filters.clear")</a>
-    }
-</div>
+        @if(selectedFilter.isDefined) {
+            <a href="@controllers.routes.DashboardController.onPageLoad().url"
+            class="govuk-button govuk-button--secondary govuk-link--no-visited-state"
+            role="button">@messages("dashboard.filters.clear")</a>
+        }
+    </div>
+}

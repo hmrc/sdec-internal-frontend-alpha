@@ -16,20 +16,15 @@
 
 package models
 
-import play.api.libs.json.{Json, OFormat}
+final case class ThreadQuery(
+  threadOwner: Option[String] = None
+) {
+  def toQueryParameters: Seq[(String, String)] =
+    threadOwner.map(owner => ThreadQuery.threadOwnerKey -> owner).toSeq
+}
 
-import java.time.LocalDate
+object ThreadQuery {
 
-final case class Thread(
-  threadReference:  ThreadReference,
-  relatedReference: Option[String],
-  externalContact:  String,
-  status:           String,
-  waitingOn:        String,
-  deadline:         Option[LocalDate],
-  threadOwner:      Option[String] = None
-)
+  val threadOwnerKey: String = "threadOwner"
 
-object Thread {
-  given format: OFormat[Thread] = Json.format[Thread]
 }

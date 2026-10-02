@@ -17,7 +17,7 @@
 package services
 
 import connectors.ThreadConnector
-import models.Thread
+import models.{Thread, ThreadFilter, ThreadQuery}
 import uk.gov.hmrc.http.HeaderCarrier
 import viewmodels.{DashboardThread, ThreadPriority}
 
@@ -30,13 +30,29 @@ import scala.concurrent.{ExecutionContext, Future}
 class DashboardService @Inject() (
   threadSummaryConnector: ThreadConnector,
   clock:                  Clock
-)(using ExecutionContext):
+)(using ExecutionContext) {
 
   private val dateFormatter: DateTimeFormatter =
     DateTimeFormatter.ofPattern("dd/MM/yyyy")
 
-  def getDashboardThreads()(using HeaderCarrier): Future[Seq[DashboardThread]] =
-    threadSummaryConnector.getAll().map(_.map(toDashboardThread))
+  def getDashboardThreads(userId: String, selectedFilter: Option[ThreadFilter] = None)(using
+    HeaderCarrier
+  ): Future[Seq[DashboardThread]] =
+    threadSummaryConnector
+      .getAll(filterToThreadQuery(userId, selectedFilter))
+      .map(_.map(toDashboardThread))
+
+  private def filterToThreadQuery(userId: String, threadFilter: Option[ThreadFilter]): ThreadQuery =
+    threadFilter match {
+      case Some(ThreadFilter.MyThreads)     => ThreadQuery(threadOwner = Some(userId))
+      case Some(ThreadFilter.NeedsAction)   => ThreadQuery()
+      case Some(ThreadFilter.Waiting)       => ThreadQuery()
+      case Some(ThreadFilter.Overdue)       => ThreadQuery()
+      case Some(ThreadFilter.InProgress)    => ThreadQuery()
+      case Some(ThreadFilter.OpenThreads)   => ThreadQuery()
+      case Some(ThreadFilter.ClosedThreads) => ThreadQuery()
+      case None                             => ThreadQuery()
+    }
 
   private def toDashboardThread(thread: Thread): DashboardThread =
     DashboardThread(
@@ -55,3 +71,5 @@ class DashboardService @Inject() (
     if thread.deadline.exists(_.isBefore(LocalDate.now(clock))) then ThreadPriority.Overdue
     else if thread.status == "Needs action" then ThreadPriority.ResponseReceived
     else ThreadPriority.None
+
+}

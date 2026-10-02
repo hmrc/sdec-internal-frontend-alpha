@@ -14,20 +14,22 @@
  * limitations under the License.
  *@
 
+@import models.ThreadFilter
 @import play.twirl.api.HtmlFormat
 @import views.html.components.gds.*
 @import viewmodels.{DashboardThread, ThreadPriority}
-@import views.html.components.dashboard.{ThreadTable, EmptyThreadState}
+@import views.html.components.dashboard.{EmptyThreadState, ThreadFilters, ThreadTable}
 
 @this(
         layout: templates.Layout,
         govukButton: GovukButton,
         headingH2: HeadingH2,
+        threadFilters: ThreadFilters,
         threadTable: ThreadTable,
         emptyThreadState: EmptyThreadState
 )
 
-@(threads: Seq[DashboardThread])(implicit request: Request[_], messages: Messages)
+@(threads: Seq[DashboardThread], selectedFilter: Option[ThreadFilter])(implicit request: Request[_], messages: Messages)
 
 @layout(
     pageTitle = titleNoForm(messages("dashboard.title")),
@@ -49,10 +51,12 @@
             extraClasses = Seq("govuk-!-margin-bottom-3")
         )
 
+        @threadFilters(selectedFilter)
+
         @if(threads.nonEmpty) {
             @threadTable(threads)
         } else {
-            @emptyThreadState()
+            @emptyThreadState(selectedFilter)
         }
     </div>
 }

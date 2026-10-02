@@ -40,11 +40,54 @@ class DashboardControllerSpec extends SpecBase {
 
       val application = baseApplication.build()
 
-      when(mockThreadConnector.getAll()(using any[HeaderCarrier]))
+      when(mockThreadConnector.getAll(any())(using any[HeaderCarrier]))
         .thenReturn(Future.successful(Seq.empty))
 
       running(application) {
         val request = FakeRequest(GET, routes.DashboardController.onPageLoad().url)
+        val result  = route(application, request).value
+
+        status(result) mustEqual OK
+      }
+    }
+
+    "must return OK with the URL query 'filter=my-threads'" in {
+      val application = baseApplication.build()
+
+      when(mockThreadConnector.getAll(any())(using any[HeaderCarrier]))
+        .thenReturn(Future.successful(Seq.empty))
+
+      running(application) {
+        val request = FakeRequest(GET, s"${routes.DashboardController.onPageLoad().url}?filter=my-threads")
+        val result  = route(application, request).value
+
+        status(result) mustEqual OK
+      }
+    }
+
+    "must return OK and ignore a URL query parameter key other than 'filter'" in {
+      val application = baseApplication.build()
+
+      when(mockThreadConnector.getAll(any())(using any[HeaderCarrier]))
+        .thenReturn(Future.successful(Seq.empty))
+
+      running(application) {
+        val request =
+          FakeRequest(GET, s"${routes.DashboardController.onPageLoad().url}?unknown-parameter-key=my-threads")
+        val result = route(application, request).value
+
+        status(result) mustEqual OK
+      }
+    }
+
+    "must return OK and ignore an unknown value for the URL query parameter key 'filter'" in {
+      val application = baseApplication.build()
+
+      when(mockThreadConnector.getAll(any())(using any[HeaderCarrier]))
+        .thenReturn(Future.successful(Seq.empty))
+
+      running(application) {
+        val request = FakeRequest(GET, s"${routes.DashboardController.onPageLoad().url}?filter=unknown-parameter-value")
         val result  = route(application, request).value
 
         status(result) mustEqual OK
@@ -56,7 +99,7 @@ class DashboardControllerSpec extends SpecBase {
 
       val exception = new RuntimeException("Unable to load threads")
 
-      when(mockThreadConnector.getAll()(using any[HeaderCarrier]))
+      when(mockThreadConnector.getAll(any())(using any[HeaderCarrier]))
         .thenReturn(Future.failed(exception))
 
       running(application) {

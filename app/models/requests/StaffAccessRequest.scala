@@ -14,23 +14,15 @@
  * limitations under the License.
  */
 
-package helpers
+package models.requests
 
-import connectors.{StaffConnector, ThreadConnector}
-import org.mockito.Mockito
-import org.scalatest.BeforeAndAfterEach
-import org.scalatestplus.mockito.MockitoSugar
+import play.api.libs.json.{Format, Json}
 
-trait AllMocks extends MockitoSugar { me: BeforeAndAfterEach =>
+final case class StaffAccessRequest(
+  pid:  String,
+  role: String
+)
 
-  val mockThreadConnector: ThreadConnector = mock[ThreadConnector]
-
-  val mockStaffConnector: StaffConnector = mock[StaffConnector]
-
-  override protected def beforeEach(): Unit =
-    Seq(
-      mockThreadConnector,
-      mockStaffConnector
-    ).foreach(Mockito.reset(_))
-
+object StaffAccessRequest {
+  given Format[StaffAccessRequest] = Json.format[StaffAccessRequest]
 }

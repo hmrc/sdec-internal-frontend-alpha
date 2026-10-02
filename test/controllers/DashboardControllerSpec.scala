@@ -17,7 +17,9 @@
 package controllers
 
 import base.SpecBase
-import connectors.ThreadConnector
+import connectors.{StaffConnector, ThreadConnector}
+import models.requests.StaffAccessRequest
+import models.response.StaffAccessResponse
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.when
 import play.api.inject.bind
@@ -31,7 +33,8 @@ class DashboardControllerSpec extends SpecBase {
 
   private def baseApplication = applicationBuilder(userAnswers = None)
     .overrides(
-      bind[ThreadConnector].toInstance(mockThreadConnector)
+      bind[ThreadConnector].toInstance(mockThreadConnector),
+      bind[StaffConnector].toInstance(mockStaffConnector)
     )
 
   "Dashboard Controller" - {
@@ -39,6 +42,9 @@ class DashboardControllerSpec extends SpecBase {
     "must return OK and the correct view for a GET" in {
 
       val application = baseApplication.build()
+
+      when(mockStaffConnector.validateAccess(any[StaffAccessRequest])(using any[HeaderCarrier]))
+        .thenReturn(Future.successful(StaffAccessResponse(authorised = true)))
 
       when(mockThreadConnector.getAll()(using any[HeaderCarrier]))
         .thenReturn(Future.successful(Seq.empty))
@@ -55,6 +61,9 @@ class DashboardControllerSpec extends SpecBase {
       val application = baseApplication.build()
 
       val exception = new RuntimeException("Unable to load threads")
+
+      when(mockStaffConnector.validateAccess(any[StaffAccessRequest])(using any[HeaderCarrier]))
+        .thenReturn(Future.successful(StaffAccessResponse(authorised = true)))
 
       when(mockThreadConnector.getAll()(using any[HeaderCarrier]))
         .thenReturn(Future.failed(exception))

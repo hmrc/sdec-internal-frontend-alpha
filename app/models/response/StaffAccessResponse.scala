@@ -14,19 +14,14 @@
  * limitations under the License.
  */
 
-package models.requests
+package models.response
 
-import models.{RecipientDetails, Team, ThreadDetails}
-import play.api.libs.json.{Json, OFormat}
+import play.api.libs.json.{Format, Json}
 
-final case class CreateThreadRequest(
-  creatorPid:       String,
-  creatorName:      Option[String],
-  owningTeam:       Team,
-  recipientDetails: RecipientDetails,
-  threadDetails:    ThreadDetails
+final case class StaffAccessResponse(
+  authorised: Boolean
 )
 
-object CreateThreadRequest {
-  given OFormat[CreateThreadRequest] = Json.format[CreateThreadRequest]
+object StaffAccessResponse {
+  given Format[StaffAccessResponse] = Json.format[StaffAccessResponse]
 }

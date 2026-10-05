@@ -15,8 +15,11 @@
  */
 
 package controllers
+
 import controllers.actions.IdentifierAction
 import models.ThreadFilter
+import connectors.StaffConnector
+import models.requests.StaffAccessRequest
 import play.api.Logging
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
@@ -28,14 +31,14 @@ import uk.gov.hmrc.play.http.HeaderCarrierConverter
 import views.html.DashboardView
 
 import javax.inject.Inject
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{ExecutionContext, Future}
 import scala.util.control.NonFatal
 
 class DashboardController @Inject() (
   val controllerComponents: MessagesControllerComponents,
-  identify:                 IdentifierAction,
   strideAuth:               StrideAuthAlgebra,
   dashboardService:         DashboardService,
+  staffConnector:           StaffConnector,
   view:                     DashboardView
 )(using ExecutionContext)
     extends FrontendBaseController
@@ -44,12 +47,35 @@ class DashboardController @Inject() (
 
   def onPageLoad(filter: Option[ThreadFilter]): Action[AnyContent] =
     strideAuth.authorisedFromStride { (strideUser, request) =>
+      val pid  = strideUser.credentials.providerId
+      val role = strideUser.allEnrollments.enrolments.head.key
+
       given HeaderCarrier = HeaderCarrierConverter.fromRequest(request)
       logger.info(s"STRIDE User [$strideUser]")
-      dashboardService
-        .getDashboard(userId = strideUser.credentials.providerId, selectedFilter = filter)
-        .map { dashboard =>
-          Ok(view(dashboard)(using request, request2Messages(request)))
+      staffConnector
+        .validateAccess(accessRequest)
+        .flatMap { accessResponse =>
+          if accessResponse.authorised then {
+
+            dashboardService
+              .getDashboard(userId = strideUser.credentials.providerId, selectedFilter = filter)
+              .map { dashboard =>
+                Ok(view(dashboard)(using request, request2Messages(request)))
+                val accessRequest =
+                  StaffAccessRequest(
+                    pid = pid,
+                    role = role
+                  )
+
+          } else {
+
+            Future.successful(
+              Redirect(
+                routes.DevelopmentInProgressController.onPageLoad()
+              )
+            )
+
+          }
         }
         .recover { case NonFatal(exception) =>
           logger.error("Failed to load the Workspace", exception)

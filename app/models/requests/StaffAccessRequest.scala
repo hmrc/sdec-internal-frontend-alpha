@@ -16,17 +16,13 @@
 
 package models.requests
 
-import models.{RecipientDetails, Team, ThreadDetails}
-import play.api.libs.json.{Json, OFormat}
+import play.api.libs.json.{Format, Json}
 
-final case class CreateThreadRequest(
-  creatorPid:       String,
-  creatorName:      Option[String],
-  owningTeam:       Team,
-  recipientDetails: RecipientDetails,
-  threadDetails:    ThreadDetails
+final case class StaffAccessRequest(
+  pid:  String,
+  role: String
 )
 
-object CreateThreadRequest {
-  given OFormat[CreateThreadRequest] = Json.format[CreateThreadRequest]
+object StaffAccessRequest {
+  given Format[StaffAccessRequest] = Json.format[StaffAccessRequest]
 }

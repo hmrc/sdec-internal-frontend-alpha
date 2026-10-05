@@ -16,13 +16,16 @@
 
 package models
 
-import play.api.libs.json.{Json, OFormat}
+import play.api.libs.json.{Format, Json}
 
-final case class Team(
-  name:      String,
-  taskBased: Boolean
-)
+final case class Team(name: String, taskBased: Boolean)
 
 object Team {
-  given format: OFormat[Team] = Json.format[Team]
+  given Format[Team] = Json.format[Team]
+
+  // TODO: populate from the role matrix
+  private val TaskBasedRoles: Set[String] = Set.empty
+
+  def fromRole(role: String): Team =
+    Team(name = role, taskBased = TaskBasedRoles.contains(role))
 }

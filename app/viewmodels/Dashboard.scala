@@ -14,22 +14,12 @@
  * limitations under the License.
  */
 
-package models
+package viewmodels
 
-import play.api.libs.json.{Json, OFormat}
+import models.ThreadFilter
 
-import java.time.LocalDate
-
-final case class Thread(
-  threadReference:  ThreadReference,
-  relatedReference: Option[String],
-  externalContact:  String,
-  status:           String,
-  waitingOn:        String,
-  deadline:         Option[LocalDate],
-  threadOwner:      Option[String] = None
+final case class Dashboard(
+  threads:          Seq[DashboardThread],
+  availableFilters: Seq[ThreadFilter],
+  appliedFilter:    Option[ThreadFilter]
 )
-
-object Thread {
-  given format: OFormat[Thread] = Json.format[Thread]
-}

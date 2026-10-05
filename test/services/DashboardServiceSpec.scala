@@ -14,15 +14,15 @@
  * limitations under the License.
  */
 
-package service
+package services
 
 import base.SpecBase
-import models.{Thread, ThreadReference}
-import org.mockito.ArgumentMatchers.any
-import org.mockito.Mockito.when
+import models.{Team, Thread, ThreadFilter, ThreadQuery, ThreadReference}
+import org.mockito.ArgumentMatchers.{any, eq as eqTo}
+import org.mockito.Mockito.{verify, when}
 import services.DashboardService
 import uk.gov.hmrc.http.HeaderCarrier
-import viewmodels.{DashboardThread, ThreadPriority}
+import viewmodels.{Dashboard, DashboardThread, ThreadPriority}
 
 import java.time.{Clock, LocalDate, ZoneOffset}
 import scala.concurrent.{ExecutionContext, Future}
@@ -39,12 +39,46 @@ class DashboardServiceSpec()(using ExecutionContext) extends SpecBase {
       ZoneOffset.UTC
     )
 
-  private val service = new DashboardService(mockThreadConnector, clock)
+  private val service = new DashboardService(mockThreadConnector, mockTeamConnector, clock)
 
-  "getDashboardThreads" - {
+  private val threadOwner  = "user-1"
+  private val secondUserId = "user-2"
+  private val thirdUserId  = "user-3"
+
+  private val baseThread = Thread(
+    threadReference = ThreadReference("THREAD1000AA"),
+    relatedReference = None,
+    externalContact = "John Doe",
+    status = "Active",
+    waitingOn = "Jane Doe",
+    deadline = None
+  )
+
+  private val userThread1: Thread = baseThread.copy(threadOwner = Some(threadOwner))
+  private val userThread2: Thread = baseThread.copy(threadOwner = Some(secondUserId))
+  private val userThread3: Thread = baseThread.copy(threadOwner = Some(thirdUserId))
+
+  private val allThreads: Seq[Thread] = Seq(userThread1, userThread2, userThread3)
+
+  private val taskBasedTeam:    Team = Team(name = "child_benefit", taskBased = true)
+  private val nonTaskBasedTeam: Team = Team(name = "vat", taskBased = false)
+
+  "getDashboard" - {
 
     "return an empty sequence when no threads are provided" in {
       dashboardThreadsFor(Seq.empty) mustBe Seq.empty
+    }
+
+    "request only the user's own threads for the 'My threads' filter" in {
+      dashboardThreadsFor(allThreads, Some(ThreadFilter.MyThreads))
+
+      verify(mockThreadConnector).getAll(eqTo(ThreadQuery(threadOwner = Some(threadOwner))))(using any[HeaderCarrier])
+    }
+
+    "request every thread when no filter is applied" in {
+      dashboardThreadsFor(allThreads)
+
+      verify(mockThreadConnector).getAll(eqTo(ThreadQuery()))(using any[HeaderCarrier])
     }
 
     "map a thread to a dashboard thread" in {
@@ -158,12 +192,41 @@ class DashboardServiceSpec()(using ExecutionContext) extends SpecBase {
 
       dashboardThreadsFor(Seq(thread)).head.priority mustBe ThreadPriority.None
     }
+
+    "provide the 'My threads' filter when staff belongs to no task-based team" in {
+      val dashboard = dashboardFor(allThreads, teams = Seq(nonTaskBasedTeam))
+
+      dashboard.availableFilters mustBe Seq(ThreadFilter.MyThreads)
+    }
+
+    "provide no filters when staff belongs to at least one task-based team" in {
+      val dashboard = dashboardFor(allThreads, teams = Seq(nonTaskBasedTeam, taskBasedTeam))
+
+      dashboard.availableFilters mustBe empty
+    }
+
+    "ignore the 'My threads' filter in the URL when staff belongs to at least one task-based team" in {
+      val dashboard = dashboardFor(allThreads, teams = Seq(taskBasedTeam), filter = Some(ThreadFilter.MyThreads))
+
+      dashboard.appliedFilter mustBe None
+    }
   }
 
-  private def dashboardThreadsFor(threads: Seq[Thread]): Seq[DashboardThread] = {
-    when(mockThreadConnector.getAll()(using any[HeaderCarrier]))
+  private def dashboardFor(
+    threads: Seq[Thread],
+    teams:   Seq[Team] = Seq.empty,
+    filter:  Option[ThreadFilter] = None
+  ): Dashboard = {
+    when(mockThreadConnector.getAll(any[ThreadQuery])(using any[HeaderCarrier]))
       .thenReturn(Future.successful(threads))
 
-    service.getDashboardThreads().futureValue
+    when(mockTeamConnector.findTeamsByPid(any[String])(using any[HeaderCarrier]))
+      .thenReturn(Future.successful(teams))
+
+    service.getDashboard(userId = threadOwner, selectedFilter = filter).futureValue
   }
+
+  private def dashboardThreadsFor(threads: Seq[Thread], filter: Option[ThreadFilter] = None): Seq[DashboardThread] =
+    dashboardFor(threads, filter = filter).threads
+
 }

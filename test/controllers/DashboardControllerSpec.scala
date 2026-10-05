@@ -17,7 +17,7 @@
 package controllers
 
 import base.SpecBase
-import connectors.{StaffConnector, ThreadConnector}
+import connectors.{StaffConnector, TeamConnector, ThreadConnector}
 import models.requests.StaffAccessRequest
 import models.response.StaffAccessResponse
 import org.mockito.ArgumentMatchers.any
@@ -31,8 +31,17 @@ import scala.concurrent.Future
 
 class DashboardControllerSpec extends SpecBase {
 
+  override protected def beforeEach(): Unit = {
+    super.beforeEach()
+    when(mockTeamConnector.findTeamsByPid(any())(using any[HeaderCarrier]))
+      .thenReturn(Future.successful(Seq.empty))
+    when(mockStaffConnector.validateAccess(any[StaffAccessRequest])(using any[HeaderCarrier]))
+      .thenReturn(Future.successful(StaffAccessResponse(authorised = true)))
+  }
+
   private def baseApplication = applicationBuilder(userAnswers = None)
     .overrides(
+      bind[TeamConnector].toInstance(mockTeamConnector),
       bind[ThreadConnector].toInstance(mockThreadConnector),
       bind[StaffConnector].toInstance(mockStaffConnector)
     )
@@ -43,10 +52,7 @@ class DashboardControllerSpec extends SpecBase {
 
       val application = baseApplication.build()
 
-      when(mockStaffConnector.validateAccess(any[StaffAccessRequest])(using any[HeaderCarrier]))
-        .thenReturn(Future.successful(StaffAccessResponse(authorised = true)))
-
-      when(mockThreadConnector.getAll()(using any[HeaderCarrier]))
+      when(mockThreadConnector.getAll(any())(using any[HeaderCarrier]))
         .thenReturn(Future.successful(Seq.empty))
 
       running(application) {
@@ -57,15 +63,70 @@ class DashboardControllerSpec extends SpecBase {
       }
     }
 
+    "must return OK with the URL query 'filter=my-threads'" in {
+      val application = baseApplication.build()
+
+      when(mockThreadConnector.getAll(any())(using any[HeaderCarrier]))
+        .thenReturn(Future.successful(Seq.empty))
+
+      running(application) {
+        val request = FakeRequest(GET, s"${routes.DashboardController.onPageLoad().url}?filter=my-threads")
+        val result  = route(application, request).value
+
+        status(result) mustEqual OK
+      }
+    }
+
+    "must return OK and ignore a URL query parameter key other than 'filter'" in {
+      val application = baseApplication.build()
+
+      when(mockThreadConnector.getAll(any())(using any[HeaderCarrier]))
+        .thenReturn(Future.successful(Seq.empty))
+
+      running(application) {
+        val request =
+          FakeRequest(GET, s"${routes.DashboardController.onPageLoad().url}?unknown-parameter-key=my-threads")
+        val result = route(application, request).value
+
+        status(result) mustEqual OK
+      }
+    }
+
+    "must return OK and ignore an unknown value for the URL query parameter key 'filter'" in {
+      val application = baseApplication.build()
+
+      when(mockThreadConnector.getAll(any())(using any[HeaderCarrier]))
+        .thenReturn(Future.successful(Seq.empty))
+
+      running(application) {
+        val request = FakeRequest(GET, s"${routes.DashboardController.onPageLoad().url}?filter=unknown-parameter-value")
+        val result  = route(application, request).value
+
+        status(result) mustEqual OK
+      }
+    }
+
+    "must redirect to Development In Progress when the user is not authorised" in {
+      val application = baseApplication.build()
+
+      when(mockStaffConnector.validateAccess(any[StaffAccessRequest])(using any[HeaderCarrier]))
+        .thenReturn(Future.successful(StaffAccessResponse(authorised = false)))
+
+      running(application) {
+        val request = FakeRequest(GET, routes.DashboardController.onPageLoad().url)
+        val result  = route(application, request).value
+
+        status(result) mustEqual SEE_OTHER
+        redirectLocation(result).value mustEqual routes.DevelopmentInProgressController.onPageLoad().url
+      }
+    }
+
     "must redirect to Journey Recovery when loading threads fails" in {
       val application = baseApplication.build()
 
       val exception = new RuntimeException("Unable to load threads")
 
-      when(mockStaffConnector.validateAccess(any[StaffAccessRequest])(using any[HeaderCarrier]))
-        .thenReturn(Future.successful(StaffAccessResponse(authorised = true)))
-
-      when(mockThreadConnector.getAll()(using any[HeaderCarrier]))
+      when(mockThreadConnector.getAll(any())(using any[HeaderCarrier]))
         .thenReturn(Future.failed(exception))
 
       running(application) {

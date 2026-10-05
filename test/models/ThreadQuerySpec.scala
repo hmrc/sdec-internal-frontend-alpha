@@ -16,20 +16,19 @@
 
 package models
 
-import play.api.libs.json.{Json, OFormat}
+import base.SpecBase
 
-import java.time.LocalDate
+class ThreadQuerySpec extends SpecBase {
 
-final case class Thread(
-  threadReference:  ThreadReference,
-  relatedReference: Option[String],
-  externalContact:  String,
-  status:           String,
-  waitingOn:        String,
-  deadline:         Option[LocalDate],
-  threadOwner:      Option[String] = None
-)
+  private val userId: String = "pid-cb-001"
 
-object Thread {
-  given format: OFormat[Thread] = Json.format[Thread]
+  "toQueryParameters" - {
+    "must be empty when no criteria are set" in {
+      ThreadQuery().toQueryParameters mustBe Seq.empty
+    }
+
+    "must set the thread owner as the 'threadOwner' parameter" in {
+      ThreadQuery(threadOwner = Some(userId)).toQueryParameters mustBe Seq("threadOwner" -> userId)
+    }
+  }
 }

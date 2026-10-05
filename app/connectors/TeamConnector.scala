@@ -17,9 +17,7 @@
 package connectors
 
 import config.FrontendAppConfig
-import models.{Thread, ThreadQuery, ThreadReference}
-import play.api.Logging
-import stride.StrideAuthUser
+import models.Team
 import uk.gov.hmrc.http.HttpReads.Implicits.readFromJson
 import uk.gov.hmrc.http.client.HttpClientV2
 import uk.gov.hmrc.http.{HeaderCarrier, StringContextOps}
@@ -28,18 +26,14 @@ import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class ThreadConnector @Inject() (
+class TeamConnector @Inject() (
   httpClient: HttpClientV2,
   appConfig:  FrontendAppConfig
-)(using ec: ExecutionContext)
-    extends Logging {
+)(using ExecutionContext) {
 
-  def getAll(threadQuery: ThreadQuery = ThreadQuery())(using hc: HeaderCarrier): Future[Seq[Thread]] =
+  def findTeamsByPid(pid: String)(using HeaderCarrier): Future[Seq[Team]] =
     httpClient
-      .get(url"${appConfig.threadSummariesUrl}?${threadQuery.toQueryParameters}")
-      .execute[Seq[Thread]]
-
-  def get(user: StrideAuthUser, threadReference: ThreadReference)(using hc: HeaderCarrier): Future[Option[Thread]] =
-    getAll().map(_.find(_.threadReference == threadReference))
+      .get(url"${appConfig.staffUrl}/$pid/teams")
+      .execute[Seq[Team]]
 
 }

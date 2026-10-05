@@ -17,6 +17,7 @@
 package controllers
 
 import connectors.StaffConnector
+import models.ThreadFilter
 import models.requests.StaffAccessRequest
 import play.api.Logging
 import play.api.i18n.I18nSupport
@@ -43,13 +44,15 @@ class DashboardController @Inject() (
     with I18nSupport
     with Logging {
 
-  def onPageLoad(): Action[AnyContent] =
+  def onPageLoad(filter: Option[ThreadFilter]): Action[AnyContent] =
     strideAuth.authorisedFromStride { (strideUser, request) =>
       val pid  = strideUser.credentials.providerId
       val role = strideUser.allEnrollments.enrolments.head.key
 
       given HeaderCarrier = HeaderCarrierConverter.fromRequest(request)
+
       logger.info(s"STRIDE User [$strideUser]")
+
       val accessRequest =
         StaffAccessRequest(
           pid = pid,
@@ -59,28 +62,11 @@ class DashboardController @Inject() (
       staffConnector
         .validateAccess(accessRequest)
         .flatMap { accessResponse =>
-          if accessResponse.authorised then {
-
+          if accessResponse.authorised then
             dashboardService
-              .getDashboardThreads()
-              .map { dashboardThreads =>
-                Ok(
-                  view(dashboardThreads)(using
-                    request,
-                    request2Messages(request)
-                  )
-                )
-              }
-
-          } else {
-
-            Future.successful(
-              Redirect(
-                routes.DevelopmentInProgressController.onPageLoad()
-              )
-            )
-
-          }
+              .getDashboard(userId = pid, selectedFilter = filter)
+              .map(dashboard => Ok(view(dashboard)(using request, request2Messages(request))))
+          else Future.successful(Redirect(routes.DevelopmentInProgressController.onPageLoad()))
         }
         .recover { case NonFatal(exception) =>
           logger.error("Failed to load the Workspace", exception)

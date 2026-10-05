@@ -20,9 +20,10 @@ import com.google.inject.{Inject, Singleton}
 import play.api.Configuration
 import play.api.i18n.Lang
 import play.api.mvc.RequestHeader
+import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 
 @Singleton
-class FrontendAppConfig @Inject() (configuration: Configuration) {
+class FrontendAppConfig @Inject() (configuration: Configuration, servicesConfig: ServicesConfig) {
 
   val host:    String = configuration.get[String]("host")
   val appName: String = configuration.get[String]("appName")
@@ -30,15 +31,15 @@ class FrontendAppConfig @Inject() (configuration: Configuration) {
   private val contactHost                  = configuration.get[String]("contact-frontend.host")
   private val contactFormServiceIdentifier = "sdec-internal-frontend"
 
-  def feedbackUrl(implicit request: RequestHeader): String =
+  def feedbackUrl(using request: RequestHeader): String =
     s"$contactHost/contact/beta-feedback?service=$contactFormServiceIdentifier&backUrl=${host + request.uri}"
 
   val loginUrl:         String = configuration.get[String]("urls.login")
   val loginContinueUrl: String = configuration.get[String]("urls.loginContinue")
   val signOutUrl:       String = configuration.get[String]("urls.signOut")
 
-  private val exitSurveyBaseUrl: String =
-    configuration.get[Service]("microservice.services.feedback-frontend").baseUrl
+  private val exitSurveyBaseUrl: String = servicesConfig.baseUrl(serviceName = "feedback-frontend")
+
   val exitSurveyUrl: String = s"$exitSurveyBaseUrl/feedback/sdec-internal-frontend"
 
   val languageTranslationEnabled: Boolean =
@@ -49,19 +50,15 @@ class FrontendAppConfig @Inject() (configuration: Configuration) {
     "cy" -> Lang("cy")
   )
 
-  private val threadInfoApi =
-    configuration.get[Service]("microservice.services.sdec-threadinfo-api-alpha")
-
-  val threadSummariesUrl: String = s"${threadInfoApi.baseUrl}/sdec-threadinfo-api-alpha/threads"
+  private val threadInfoApiBaseUrl: String = servicesConfig.baseUrl(serviceName = "sdec-threadinfo-api-alpha")
 
   val workspaceAccessUrl: String =
-    s"${threadInfoApi.baseUrl}/sdec-threadinfo-api-alpha/workspace"
+    s"$threadInfoApiBaseUrl/sdec-threadinfo-api-alpha/workspace"
 
-  val threadReferenceUrl: String =
-    s"${threadInfoApi.baseUrl}/sdec-threadinfo-api-alpha/thread-reference"
-
-  val threadCreateUrl: String =
-    s"${threadInfoApi.baseUrl}/sdec-threadinfo-api-alpha/thread-create"
+  val threadSummariesUrl: String = s"$threadInfoApiBaseUrl/sdec-threadinfo-api-alpha/threads"
+  val threadReferenceUrl: String = s"$threadInfoApiBaseUrl/sdec-threadinfo-api-alpha/thread-reference"
+  val threadCreateUrl:    String = s"$threadInfoApiBaseUrl/sdec-threadinfo-api-alpha/thread-create"
+  val staffUrl:           String = s"$threadInfoApiBaseUrl/sdec-threadinfo-api-alpha/staff"
 
   val timeout:   Int = configuration.get[Int]("timeout-dialog.timeout")
   val countdown: Int = configuration.get[Int]("timeout-dialog.countdown")

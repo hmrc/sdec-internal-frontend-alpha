@@ -53,7 +53,7 @@ class FrontendAppConfig @Inject() (configuration: Configuration, servicesConfig:
   private val threadInfoApiBaseUrl: String = servicesConfig.baseUrl(serviceName = "sdec-threadinfo-api-alpha")
 
   val workspaceAccessUrl: String =
-    s"${threadInfoApi.baseUrl}/sdec-threadinfo-api-alpha/workspace"
+    s"$threadInfoApiBaseUrl/workspace"
 
   val threadSummariesUrl: String = s"$threadInfoApiBaseUrl/sdec-threadinfo-api-alpha/threads"
   val threadReferenceUrl: String = s"$threadInfoApiBaseUrl/sdec-threadinfo-api-alpha/thread-reference"

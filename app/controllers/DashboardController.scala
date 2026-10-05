@@ -16,9 +16,8 @@
 
 package controllers
 
-import controllers.actions.IdentifierAction
-import models.ThreadFilter
 import connectors.StaffConnector
+import models.ThreadFilter
 import models.requests.StaffAccessRequest
 import play.api.Logging
 import play.api.i18n.I18nSupport
@@ -51,31 +50,23 @@ class DashboardController @Inject() (
       val role = strideUser.allEnrollments.enrolments.head.key
 
       given HeaderCarrier = HeaderCarrierConverter.fromRequest(request)
+
       logger.info(s"STRIDE User [$strideUser]")
+
+      val accessRequest =
+        StaffAccessRequest(
+          pid = pid,
+          role = role
+        )
+
       staffConnector
         .validateAccess(accessRequest)
         .flatMap { accessResponse =>
-          if accessResponse.authorised then {
-
+          if accessResponse.authorised then
             dashboardService
-              .getDashboard(userId = strideUser.credentials.providerId, selectedFilter = filter)
-              .map { dashboard =>
-                Ok(view(dashboard)(using request, request2Messages(request)))
-                val accessRequest =
-                  StaffAccessRequest(
-                    pid = pid,
-                    role = role
-                  )
-
-          } else {
-
-            Future.successful(
-              Redirect(
-                routes.DevelopmentInProgressController.onPageLoad()
-              )
-            )
-
-          }
+              .getDashboard(userId = pid, selectedFilter = filter)
+              .map(dashboard => Ok(view(dashboard)(using request, request2Messages(request))))
+          else Future.successful(Redirect(routes.DevelopmentInProgressController.onPageLoad()))
         }
         .recover { case NonFatal(exception) =>
           logger.error("Failed to load the Workspace", exception)

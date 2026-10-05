@@ -25,7 +25,7 @@ trait AllMocks extends MockitoSugar { me: BeforeAndAfterEach =>
 
   val mockTeamConnector:   TeamConnector   = mock[TeamConnector]
   val mockThreadConnector: ThreadConnector = mock[ThreadConnector]
-  val mockStaffConnector: StaffConnector = mock[StaffConnector]
+  val mockStaffConnector:  StaffConnector  = mock[StaffConnector]
 
   override protected def beforeEach(): Unit =
     Seq(

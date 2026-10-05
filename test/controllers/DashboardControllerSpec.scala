@@ -17,9 +17,7 @@
 package controllers
 
 import base.SpecBase
-import connectors.{TeamConnector, ThreadConnector}
-import models.Team
-import connectors.{StaffConnector, ThreadConnector}
+import connectors.{StaffConnector, TeamConnector, ThreadConnector}
 import models.requests.StaffAccessRequest
 import models.response.StaffAccessResponse
 import org.mockito.ArgumentMatchers.any
@@ -33,13 +31,12 @@ import scala.concurrent.Future
 
 class DashboardControllerSpec extends SpecBase {
 
-  Team(name = "child_benefit", taskBased = true)
-  Team(name = "vat", taskBased = false)
-
   override protected def beforeEach(): Unit = {
     super.beforeEach()
     when(mockTeamConnector.findTeamsByPid(any())(using any[HeaderCarrier]))
       .thenReturn(Future.successful(Seq.empty))
+    when(mockStaffConnector.validateAccess(any[StaffAccessRequest])(using any[HeaderCarrier]))
+      .thenReturn(Future.successful(StaffAccessResponse(authorised = true)))
   }
 
   private def baseApplication = applicationBuilder(userAnswers = None)
@@ -54,9 +51,6 @@ class DashboardControllerSpec extends SpecBase {
     "must return OK and the correct view for a GET" in {
 
       val application = baseApplication.build()
-
-      when(mockStaffConnector.validateAccess(any[StaffAccessRequest])(using any[HeaderCarrier]))
-        .thenReturn(Future.successful(StaffAccessResponse(authorised = true)))
 
       when(mockThreadConnector.getAll(any())(using any[HeaderCarrier]))
         .thenReturn(Future.successful(Seq.empty))
@@ -112,13 +106,25 @@ class DashboardControllerSpec extends SpecBase {
       }
     }
 
+    "must redirect to Development In Progress when the user is not authorised" in {
+      val application = baseApplication.build()
+
+      when(mockStaffConnector.validateAccess(any[StaffAccessRequest])(using any[HeaderCarrier]))
+        .thenReturn(Future.successful(StaffAccessResponse(authorised = false)))
+
+      running(application) {
+        val request = FakeRequest(GET, routes.DashboardController.onPageLoad().url)
+        val result  = route(application, request).value
+
+        status(result) mustEqual SEE_OTHER
+        redirectLocation(result).value mustEqual routes.DevelopmentInProgressController.onPageLoad().url
+      }
+    }
+
     "must redirect to Journey Recovery when loading threads fails" in {
       val application = baseApplication.build()
 
       val exception = new RuntimeException("Unable to load threads")
-
-      when(mockStaffConnector.validateAccess(any[StaffAccessRequest])(using any[HeaderCarrier]))
-        .thenReturn(Future.successful(StaffAccessResponse(authorised = true)))
 
       when(mockThreadConnector.getAll(any())(using any[HeaderCarrier]))
         .thenReturn(Future.failed(exception))

@@ -68,7 +68,8 @@ class CheckYourAnswersController @Inject() (
 
   def onSubmit(): Action[AnyContent] =
     strideAuth.authorisedFromStrideWithData { (user, dataRequest) =>
-      given HeaderCarrier = HeaderCarrierConverter.fromRequest(dataRequest.request)
+      given HeaderCarrier =
+        HeaderCarrierConverter.fromRequestAndSession(dataRequest.request, dataRequest.request.session)
 
       given Request[AnyContent] = dataRequest
 

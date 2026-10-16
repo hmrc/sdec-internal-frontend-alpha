@@ -49,7 +49,7 @@ class DashboardController @Inject() (
       val pid  = strideUser.credentials.providerId
       val role = strideUser.allEnrollments.enrolments.head.key
 
-      given HeaderCarrier = HeaderCarrierConverter.fromRequest(request)
+      given HeaderCarrier = HeaderCarrierConverter.fromRequestAndSession(request, request.session)
 
       logger.info(s"STRIDE User [$strideUser]")
 

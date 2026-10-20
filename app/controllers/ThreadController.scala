@@ -23,6 +23,7 @@ import models.ThreadReference
 import play.api.Logging
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
+import services.AuditServiceAlgebra
 import stride.StrideAuthAlgebra
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
@@ -37,6 +38,7 @@ class ThreadController @Inject() (
   val controllerComponents: MessagesControllerComponents,
   identify:                 IdentifierAction,
   strideAuth:               StrideAuthAlgebra,
+  auditService:             AuditServiceAlgebra,
   threadConnector:          ThreadConnector,
   errorHandler:             ErrorHandler,
   view:                     ThreadDetailsView
@@ -53,8 +55,10 @@ class ThreadController @Inject() (
         .get(user, threadReference)
         .flatMap {
           case Some(thread) =>
+            auditService.auditThreadViewed(user, threadReference)
             Future.successful(Ok(view(thread)(using request, request2Messages(request))))
           case None =>
+            logger.warn(s"Thread not found (ref: ${threadReference.value})")
             errorHandler.notFoundTemplate(using request).map(NotFound(_))
         }
         .recover { case NonFatal(exception) =>
@@ -62,4 +66,5 @@ class ThreadController @Inject() (
           Redirect(routes.JourneyRecoveryController.onPageLoad())
         }
     }
+
 }

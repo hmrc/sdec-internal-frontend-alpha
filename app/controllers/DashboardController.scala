@@ -22,7 +22,7 @@ import models.requests.StaffAccessRequest
 import play.api.Logging
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
-import services.DashboardService
+import services.{AuditServiceAlgebra, DashboardService}
 import stride.StrideAuthAlgebra
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
@@ -37,6 +37,7 @@ class DashboardController @Inject() (
   val controllerComponents: MessagesControllerComponents,
   strideAuth:               StrideAuthAlgebra,
   dashboardService:         DashboardService,
+  auditService:             AuditServiceAlgebra,
   staffConnector:           StaffConnector,
   view:                     DashboardView
 )(using ExecutionContext)
@@ -46,7 +47,8 @@ class DashboardController @Inject() (
 
   def onPageLoad(filter: Option[ThreadFilter]): Action[AnyContent] =
     strideAuth.authorisedFromStride { (strideUser, request) =>
-      val pid  = strideUser.credentials.providerId
+      val pid = strideUser.credentials.providerId
+      // FIXME: use headOption
       val role = strideUser.allEnrollments.enrolments.head.key
 
       given HeaderCarrier = HeaderCarrierConverter.fromRequestAndSession(request, request.session)
@@ -66,7 +68,10 @@ class DashboardController @Inject() (
             dashboardService
               .getDashboard(userId = pid, selectedFilter = filter)
               .map(dashboard => Ok(view(dashboard)(using request, request2Messages(request))))
-          else Future.successful(Redirect(routes.DevelopmentInProgressController.onPageLoad()))
+          else {
+            auditService.auditWorkspaceAccessDenied(strideUser)
+            Future.successful(Redirect(routes.DevelopmentInProgressController.onPageLoad()))
+          }
         }
         .recover { case NonFatal(exception) =>
           logger.error("Failed to load the Workspace", exception)

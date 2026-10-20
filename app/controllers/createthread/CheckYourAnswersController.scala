@@ -24,6 +24,7 @@ import pages.{RecipientDetailsPage, ThreadDetailsPage}
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.*
 import repositories.SessionRepository
+import services.AuditServiceAlgebra
 import services.createthread.CheckYourAnswersService
 import stride.{StrideAuthAlgebra, StrideAuthUser}
 import uk.gov.hmrc.http.HeaderCarrier
@@ -37,6 +38,7 @@ class CheckYourAnswersController @Inject() (
   override val messagesApi: MessagesApi,
   strideAuth:               StrideAuthAlgebra,
   checkYourAnswersService:  CheckYourAnswersService,
+  auditService:             AuditServiceAlgebra,
   val controllerComponents: MessagesControllerComponents,
   view:                     CheckYourAnswersView,
   threadCreateConnector:    ThreadCreateConnector,
@@ -104,6 +106,7 @@ class CheckYourAnswersController @Inject() (
         threadCreateConnector
           .createThread(createThreadRequest)
           .flatMap { response =>
+            auditService.auditThreadCreated(user, response.threadReference, recipient, threadDetails)
             clearSession(dataRequest).map { _ =>
               Redirect(
                 controllers.createthread.routes.ThreadViewController
@@ -126,4 +129,5 @@ class CheckYourAnswersController @Inject() (
                  )
       _ <- sessionRepository.set(cleared)
     } yield ()
+
 }

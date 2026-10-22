@@ -16,6 +16,7 @@
 
 package stride
 
+import models.requests.StaffProfile
 import uk.gov.hmrc.auth.core.Enrolments
 import uk.gov.hmrc.auth.core.retrieve.{Credentials, Name}
 
@@ -55,5 +56,13 @@ object StrideAuthUser {
       authorisedEnrollments = authorisedEnrollments,
       allEnrollments = allEnrollments,
       name = nameOption.getOrElse(Name(None, None))
+    )
+
+  def toStaffProfile(user: StrideAuthUser): StaffProfile =
+    StaffProfile(
+      pid = user.credentials.providerId,
+      name = user.name.name.getOrElse("No name defined"),
+      email = user.email,
+      srsEnrollments = user.allEnrollments.enrolments.filter(_.isActivated).map(_.key).toList
     )
 }

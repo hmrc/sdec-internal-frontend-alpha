@@ -16,10 +16,10 @@
 
 package helpers
 
-import connectors.{StaffConnector, TeamConnector, ThreadConnector}
 import org.mockito.Mockito
 import org.scalatest.BeforeAndAfterEach
 import org.scalatestplus.mockito.MockitoSugar
+import services.connectors.{StaffConnector, TeamConnector, ThreadConnector}
 
 trait AllMocks extends MockitoSugar { me: BeforeAndAfterEach =>
 

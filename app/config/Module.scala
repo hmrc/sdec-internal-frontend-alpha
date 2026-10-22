@@ -18,6 +18,8 @@ package config
 
 import com.google.inject.AbstractModule
 import controllers.actions.*
+import services.algebra.StaffInformationAlgebra
+import services.connectors.StaffConnector
 import stride.{StrideAuth, StrideAuthAlgebra}
 
 import java.time.{Clock, ZoneOffset}
@@ -41,5 +43,6 @@ class Module extends AbstractModule {
     bind(classOf[StrideAuthAlgebra]).to(classOf[StrideAuth]).asEagerSingleton()
 
     bind(classOf[Clock]).toInstance(Clock.systemDefaultZone.withZone(ZoneOffset.UTC))
+    bind(classOf[StaffInformationAlgebra]).to(classOf[StaffConnector]).asEagerSingleton()
   }
 }

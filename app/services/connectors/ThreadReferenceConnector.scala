@@ -14,13 +14,11 @@
  * limitations under the License.
  */
 
-package connectors
+package services.connectors
 
 import config.FrontendAppConfig
-import models.requests.CreateThreadRequest
-import models.response.CreateThreadResponse
-import play.api.libs.json.Json
-import play.api.libs.ws.JsonBodyWritables.writeableOf_JsValue
+import models.ThreadReferenceDetail
+import uk.gov.hmrc.http.HttpReads.Implicits.readFromJson
 import uk.gov.hmrc.http.client.HttpClientV2
 import uk.gov.hmrc.http.{HeaderCarrier, StringContextOps}
 
@@ -28,17 +26,13 @@ import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class ThreadCreateConnector @Inject() (
+class ThreadReferenceConnector @Inject() (
   httpClient: HttpClientV2,
   appConfig:  FrontendAppConfig
 )(using ec: ExecutionContext) {
 
-  def createThread(
-    request: CreateThreadRequest
-  )(using hc: HeaderCarrier): Future[CreateThreadResponse] =
+  def getThreadReference(threadReference: String)(using hc: HeaderCarrier): Future[ThreadReferenceDetail] =
     httpClient
-      .post(url"${appConfig.threadCreateUrl}")
-      .withBody(Json.toJson(request))
-      .execute[CreateThreadResponse]
-
+      .get(url"${appConfig.threadReferenceUrl}/$threadReference")
+      .execute[ThreadReferenceDetail]
 }

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package connectors
+package services.connectors
 
 import config.FrontendAppConfig
 import models.Team

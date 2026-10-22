@@ -16,13 +16,13 @@
 
 package controllers
 
-import connectors.ThreadConnector
 import controllers.actions.IdentifierAction
 import handlers.ErrorHandler
 import models.ThreadReference
 import play.api.Logging
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
+import services.connectors.ThreadConnector
 import stride.StrideAuthAlgebra
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController

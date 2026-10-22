@@ -14,13 +14,12 @@
  * limitations under the License.
  */
 
-package connectors
+package services.connectors
 
 import config.FrontendAppConfig
-import models.requests.StaffAccessRequest
-import models.response.StaffAccessResponse
-import play.api.libs.json.Json
-import play.api.libs.ws.JsonBodyWritables.writeableOf_JsValue
+import models.{Thread, ThreadQuery, ThreadReference}
+import play.api.Logging
+import stride.StrideAuthUser
 import uk.gov.hmrc.http.HttpReads.Implicits.readFromJson
 import uk.gov.hmrc.http.client.HttpClientV2
 import uk.gov.hmrc.http.{HeaderCarrier, StringContextOps}
@@ -29,17 +28,18 @@ import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class StaffConnector @Inject() (
+class ThreadConnector @Inject() (
   httpClient: HttpClientV2,
   appConfig:  FrontendAppConfig
-)(using ec: ExecutionContext) {
+)(using ec: ExecutionContext)
+    extends Logging {
 
-  def validateAccess(
-    request: StaffAccessRequest
-  )(using hc: HeaderCarrier): Future[StaffAccessResponse] =
-
+  def getAll(threadQuery: ThreadQuery = ThreadQuery())(using hc: HeaderCarrier): Future[Seq[Thread]] =
     httpClient
-      .post(url"${appConfig.workspaceAccessUrl}")
-      .withBody(Json.toJson(request))
-      .execute[StaffAccessResponse]
+      .get(url"${appConfig.threadSummariesUrl}?${threadQuery.toQueryParameters}")
+      .execute[Seq[Thread]]
+
+  def get(user: StrideAuthUser, threadReference: ThreadReference)(using hc: HeaderCarrier): Future[Option[Thread]] =
+    getAll().map(_.find(_.threadReference == threadReference))
+
 }

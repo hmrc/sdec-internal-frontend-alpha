@@ -17,13 +17,13 @@
 package controllers.createthread
 
 import com.google.inject.Inject
-import connectors.ThreadCreateConnector
 import models.requests.{CreateThreadRequest, DataRequest}
 import models.{RecipientDetails, Team, ThreadDetails}
 import pages.{RecipientDetailsPage, ThreadDetailsPage}
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.*
 import repositories.SessionRepository
+import services.connectors.ThreadCreateConnector
 import services.createthread.CheckYourAnswersService
 import stride.{StrideAuthAlgebra, StrideAuthUser}
 import uk.gov.hmrc.http.HeaderCarrier

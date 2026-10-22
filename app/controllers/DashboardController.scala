@@ -16,14 +16,15 @@
 
 package controllers
 
-import connectors.StaffConnector
 import models.ThreadFilter
 import models.requests.StaffAccessRequest
 import play.api.Logging
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import services.DashboardService
-import stride.StrideAuthAlgebra
+import services.algebra.StaffInformationAlgebra
+import services.connectors.StaffConnector
+import stride.{StrideAuthAlgebra, StrideAuthUser}
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import uk.gov.hmrc.play.http.HeaderCarrierConverter
@@ -37,7 +38,7 @@ class DashboardController @Inject() (
   val controllerComponents: MessagesControllerComponents,
   strideAuth:               StrideAuthAlgebra,
   dashboardService:         DashboardService,
-  staffConnector:           StaffConnector,
+  staffConnector:           StaffInformationAlgebra,
   view:                     DashboardView
 )(using ExecutionContext)
     extends FrontendBaseController
@@ -50,19 +51,14 @@ class DashboardController @Inject() (
       val role = strideUser.allEnrollments.enrolments.head.key
 
       given HeaderCarrier = HeaderCarrierConverter.fromRequestAndSession(request, request.session)
+      val staffProfile    = StrideAuthUser.toStaffProfile(strideUser)
 
-      logger.info(s"STRIDE User [$strideUser]")
-
-      val accessRequest =
-        StaffAccessRequest(
-          pid = pid,
-          role = role
-        )
+      logger.info(s"STRIDE User Profile [$staffProfile]")
 
       staffConnector
-        .validateAccess(accessRequest)
+        .updateStaffProfile(staffProfile)
         .flatMap { accessResponse =>
-          if accessResponse.authorised then
+          if accessResponse.staffId != 0L then
             dashboardService
               .getDashboard(userId = pid, selectedFilter = filter)
               .map(dashboard => Ok(view(dashboard)(using request, request2Messages(request))))

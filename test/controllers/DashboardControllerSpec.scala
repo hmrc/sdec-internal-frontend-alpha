@@ -17,7 +17,6 @@
 package controllers
 
 import base.SpecBase
-import connectors.{StaffConnector, TeamConnector, ThreadConnector}
 import models.requests.StaffAccessRequest
 import models.response.StaffAccessResponse
 import org.mockito.ArgumentMatchers.any
@@ -25,6 +24,7 @@ import org.mockito.Mockito.when
 import play.api.inject.bind
 import play.api.test.FakeRequest
 import play.api.test.Helpers.*
+import services.connectors.{StaffConnector, TeamConnector, ThreadConnector}
 import uk.gov.hmrc.http.HeaderCarrier
 
 import scala.concurrent.Future

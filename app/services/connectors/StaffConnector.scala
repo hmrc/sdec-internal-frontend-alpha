@@ -14,10 +14,14 @@
  * limitations under the License.
  */
 
-package connectors
+package services.connectors
 
 import config.FrontendAppConfig
-import models.ThreadReferenceDetail
+import models.requests.{StaffAccessRequest, StaffProfile}
+import models.response.{StaffAccessResponse, StaffTeamId}
+import play.api.libs.json.Json
+import play.api.libs.ws.JsonBodyWritables.writeableOf_JsValue
+import services.algebra.StaffInformationAlgebra
 import uk.gov.hmrc.http.HttpReads.Implicits.readFromJson
 import uk.gov.hmrc.http.client.HttpClientV2
 import uk.gov.hmrc.http.{HeaderCarrier, StringContextOps}
@@ -26,13 +30,24 @@ import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class ThreadReferenceConnector @Inject() (
+class StaffConnector @Inject() (
   httpClient: HttpClientV2,
   appConfig:  FrontendAppConfig
-)(using ec: ExecutionContext) {
+)(using ec: ExecutionContext)
+    extends StaffInformationAlgebra {
 
-  def getThreadReference(threadReference: String)(using hc: HeaderCarrier): Future[ThreadReferenceDetail] =
+  def validateAccess(
+    request: StaffAccessRequest
+  )(using hc: HeaderCarrier): Future[StaffAccessResponse] =
+
     httpClient
-      .get(url"${appConfig.threadReferenceUrl}/$threadReference")
-      .execute[ThreadReferenceDetail]
+      .post(url"${appConfig.workspaceAccessUrl}")
+      .withBody(Json.toJson(request))
+      .execute[StaffAccessResponse]
+
+  override def updateStaffProfile(profile: StaffProfile)(using hc: HeaderCarrier): Future[StaffTeamId] =
+    httpClient
+      .post(url"${appConfig.staffUrl}")
+      .withBody(Json.toJson(profile))
+      .execute[StaffTeamId]
 }

@@ -28,6 +28,10 @@ class ThreadCreatedAuditEventSpec extends AnyFreeSpec with Matchers {
     staffPid = "1234567",
     role = "SDEC_VAT_User",
     threadReference = "THREAD1000AA",
+    firstName = "John",
+    lastName = "Smith",
+    email = "john.smith@example.com",
+    nino = "AA000000A",
     hasRelatedCase = true,
     responseDate = LocalDate.of(2026, 11, 20)
   )
@@ -45,6 +49,10 @@ class ThreadCreatedAuditEventSpec extends AnyFreeSpec with Matchers {
           "staffPid"        -> "1234567",
           "role"            -> "SDEC_VAT_User",
           "threadReference" -> "THREAD1000AA",
+          "firstName"       -> "John",
+          "lastName"        -> "Smith",
+          "email"           -> "john.smith@example.com",
+          "nino"            -> "AA000000A",
           "hasRelatedCase"  -> true,
           "responseDate"    -> "2026-11-20"
         )
@@ -61,4 +69,5 @@ class ThreadCreatedAuditEventSpec extends AnyFreeSpec with Matchers {
       }
     }
   }
+
 }

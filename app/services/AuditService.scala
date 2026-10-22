@@ -46,6 +46,10 @@ class AuditService @Inject() (auditConnector: AuditConnector)(using ec: Executio
         staffPid = user.credentials.providerId,
         role = roleOf(user),
         threadReference = threadReference,
+        firstName = recipientDetails.firstName,
+        lastName = recipientDetails.lastName,
+        email = recipientDetails.email,
+        nino = recipientDetails.nationalInsuranceNumber,
         hasRelatedCase = recipientDetails.hasRelatedCase,
         responseDate = threadDetails.responseDate
       ).extendedDataEvent(auditSource)

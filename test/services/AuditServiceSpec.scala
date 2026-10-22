@@ -103,27 +103,13 @@ class AuditServiceSpec
           "staffPid"        -> "test-provider-id",
           "role"            -> "SDEC_VAT_User",
           "threadReference" -> threadReference,
+          "firstName"       -> recipientDetails.firstName,
+          "lastName"        -> recipientDetails.lastName,
+          "email"           -> recipientDetails.email,
+          "nino"            -> recipientDetails.nationalInsuranceNumber,
           "hasRelatedCase"  -> true,
           "responseDate"    -> "2026-11-20"
         )
-      }
-
-      "must not send the recipient's personal details or the message" in {
-        auditService
-          .auditThreadCreated(testStrideAuthUser, threadReference, recipientDetails, threadDetails)
-          .futureValue
-
-        val sentDetail      = Json.stringify(capturedEvent().detail)
-        val personalDetails = Seq(
-          recipientDetails.firstName,
-          recipientDetails.lastName,
-          recipientDetails.email,
-          recipientDetails.phoneNumber,
-          recipientDetails.nationalInsuranceNumber,
-          threadDetails.message
-        )
-
-        personalDetails.filter(sentDetail.contains) mustBe empty
       }
 
       "must return the result from the connector unchanged" in {

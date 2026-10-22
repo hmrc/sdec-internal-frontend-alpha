@@ -24,6 +24,10 @@ final case class ThreadCreatedAuditEvent(
   staffPid:        String,
   role:            String,
   threadReference: String,
+  firstName:       String,
+  lastName:        String,
+  email:           String,
+  nino:            String,
   hasRelatedCase:  Boolean,
   responseDate:    LocalDate
 ) extends AuditEvent {

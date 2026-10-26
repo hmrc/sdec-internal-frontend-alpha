@@ -18,6 +18,7 @@ package config
 
 import com.google.inject.AbstractModule
 import controllers.actions.*
+import services.{AuditService, AuditServiceAlgebra}
 import stride.{StrideAuth, StrideAuthAlgebra}
 
 import java.time.{Clock, ZoneOffset}
@@ -39,6 +40,9 @@ class Module extends AbstractModule {
       .asEagerSingleton()
 
     bind(classOf[StrideAuthAlgebra]).to(classOf[StrideAuth]).asEagerSingleton()
+
+    // Auditing service
+    bind(classOf[AuditServiceAlgebra]).to(classOf[AuditService])
 
     bind(classOf[Clock]).toInstance(Clock.systemDefaultZone.withZone(ZoneOffset.UTC))
   }
